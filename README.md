@@ -1,0 +1,2 @@
+# PoseLibrary
+Maya PoseLibrary
