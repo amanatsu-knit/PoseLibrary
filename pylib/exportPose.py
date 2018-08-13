@@ -46,6 +46,11 @@ poseData.close ()
 poseIconPath    = dataPath.replace('.pose', '.png')
 currentFrame    = mc.currentTime(q=True)
 
+modelPanelList  = mc.getPanel (type='modelPanel')
+for eachModelPanel in modelPanelList :
+    mc.modelEditor (eachModelPanel, e=True, alo=False)
+    mc.modelEditor (eachModelPanel, e=True, pm=True)
+
 playBlast       = mc.playblast(st=currentFrame, et=currentFrame, fmt='image',
                                cc=True, v=False, orn=False, fp=True, p=100, c='png',
                                wh=[512,512], cf=poseIconPath)
