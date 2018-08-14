@@ -1,3 +1,6 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 """PoseLibrary Export the pose data to custom format."""
 import maya.cmds as mc
 import os

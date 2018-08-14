@@ -1,3 +1,6 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 """Import the pose data to scene."""
 
 import maya.cmds as mc
@@ -10,9 +13,12 @@ dataList = json.load(readData)
 selectionList = mc.ls(sl=True)
 
 for eachSelection in selectionList:
-    referencePath = mc.referenceQuery(eachSelection, f=True)
-    nameSpace = mc.file(referencePath, q=True, ns=True)
-    currentControl = eachSelection.replace('%s:' % nameSpace, '')
+
+    currentControl = eachSelection
+    if mc.referenceQuery(eachSelection, inr=1):
+        referencePath = mc.referenceQuery(eachSelection, f=True)
+        nameSpace = mc.file(referencePath, q=True, ns=True)
+        currentControl = eachSelection.replace('%s:' % nameSpace, '')
 
     if currentControl in dataList['control']:
         attributeList = dataList['control'][currentControl]
