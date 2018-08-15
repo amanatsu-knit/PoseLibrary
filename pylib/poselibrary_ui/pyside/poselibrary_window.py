@@ -9,6 +9,7 @@
 import os
 import sys
 path = os.path.join(os.path.dirname(__file__), '../../')
+sys.path.append(path)
 from vendors.PySide import QtCore, QtGui
 
 class Ui_MainWindow(object):
