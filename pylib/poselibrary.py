@@ -11,7 +11,7 @@ import sys
 sys.dont_write_bytecode = True
 
 from maya import OpenMayaUI as omui
-from vendors.Qt import QtCore, QtGui, QtWidgets
+from vendor.Qt import QtCore, QtGui, QtWidgets
 
 try:
     import shiboken2 as shiboken
@@ -19,9 +19,9 @@ except:
     import shiboken
 
 try:
-    from uipackage.pyside2 import poselibrary_window
+    from pylib.ui.pyside2 import poselibrary_window
 except ImportError:
-    from uipackage.pyside import poselibrary_window
+    from pylib.ui.pyside import poselibrary_window
 
 class MainWindow(QtWidgets.QMainWindow, poselibrary_window.Ui_MainWindow):
     def __init__(self, parent=None, *args, **kwargs):
