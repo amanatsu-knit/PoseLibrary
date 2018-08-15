@@ -3,17 +3,17 @@
 DOCUMENTATION
     Qt.py was born in the film and visual effects industry to address
     the growing need for the development of software capable of running
-    with more than one flavour of the Qt bindings for Python - PySide,
-    PySide2, PyQt4 and PyQt5.
+    with more than one flavour of the Qt bindings for Python - pyside,
+    pyside2, PyQt4 and PyQt5.
 
     1. Build for one, run with all
     2. Explicit is better than implicit
     3. Support co-existence
 
     Default resolution order:
-        - PySide2
+        - pyside2
         - PyQt5
-        - PySide
+        - pyside
         - PyQt4
 
     Usage:
@@ -24,7 +24,7 @@ DOCUMENTATION
         >> button.show()
         >> app.exec_()
 
-    All members of PySide2 are mapped from other bindings, should they exist.
+    All members of pyside2 are mapped from other bindings, should they exist.
     If no equivalent member exist, it is excluded from Qt.py and inaccessible.
     The idea is to highlight members that exist across all supported binding,
     and guarantee that code that runs on one binding runs on all others.
@@ -734,7 +734,7 @@ def _wrapinstance(ptr, base=None):
 
     Usage:
         This mechanism kicks in under these circumstances.
-        1. Qt.py is using PySide 1 or 2.
+        1. Qt.py is using pyside 1 or 2.
         2. A `base` argument is not provided.
 
         See :func:`QtCompat.wrapInstance()`
@@ -800,7 +800,7 @@ def _translate(context, sourceText, *args):
                 binding=Qt.__binding__,
             )
         )
-    if Qt.__binding__ in ("PySide2", "PyQt5"):
+    if Qt.__binding__ in ("pyside2", "PyQt5"):
         sanitized_args = [context, sourceText, disambiguation, n]
     else:
         sanitized_args = [
@@ -817,7 +817,7 @@ def _loadUi(uifile, baseinstance=None):
     """Dynamically load a user interface from the given `uifile`
 
     This function calls `uic.loadUi` if using PyQt bindings,
-    else it implements a comparable binding for PySide.
+    else it implements a comparable binding for pyside.
 
     Documentation:
         http://pyqt.sourceforge.net/Docs/PyQt5/designer.html#PyQt5.uic.loadUi
@@ -835,7 +835,7 @@ def _loadUi(uifile, baseinstance=None):
         return Qt._uic.loadUi(uifile, baseinstance)
 
     elif hasattr(Qt, "_QtUiTools"):
-        # Implement `PyQt5.uic.loadUi` for PySide(2)
+        # Implement `PyQt5.uic.loadUi` for pyside(2)
 
         class _UiLoader(Qt._QtUiTools.QUiLoader):
             """Create the user interface in a base instance.
@@ -864,7 +864,7 @@ def _loadUi(uifile, baseinstance=None):
                 widget = Qt._QtUiTools.QUiLoader.load(
                     self, uifile, *args, **kwargs)
 
-                # Workaround for PySide 1.0.9, see issue #208
+                # Workaround for pyside 1.0.9, see issue #208
                 widget.parentWidget()
 
                 return widget
@@ -912,11 +912,11 @@ def _loadUi(uifile, baseinstance=None):
 
 """Misplaced members
 
-These members from the original submodule are misplaced relative PySide2
+These members from the original submodule are misplaced relative pyside2
 
 """
 _misplaced_members = {
-    "PySide2": {
+    "pyside2": {
         "QtGui.QStringListModel": "QtCore.QStringListModel",
         "QtCore.Property": "QtCore.Property",
         "QtCore.Signal": "QtCore.Signal",
@@ -964,7 +964,7 @@ _misplaced_members = {
             "QtCompat.qInstallMessageHandler", _qInstallMessageHandler
         ],
     },
-    "PySide": {
+    "pyside": {
         "QtGui.QAbstractProxyModel": "QtCore.QAbstractProxyModel",
         "QtGui.QSortFilterProxyModel": "QtCore.QSortFilterProxyModel",
         "QtGui.QStringListModel": "QtCore.QStringListModel",
@@ -1046,7 +1046,7 @@ interface for obsolete members, and differences in binding return values.
 }
 """
 _compatibility_members = {
-    "PySide2": {
+    "pyside2": {
         "QWidget": {
             "grab": "QtWidgets.QWidget.grab",
         },
@@ -1086,7 +1086,7 @@ _compatibility_members = {
             "getSaveFileName": "QtWidgets.QFileDialog.getSaveFileName",
         },
     },
-    "PySide": {
+    "pyside": {
         "QWidget": {
             "grab": "QtWidgets.QPixmap.grabWidget",
         },
@@ -1317,7 +1317,7 @@ def _build_compatibility_members(binding, decorators=None):
 
 
 def _pyside2():
-    """Initialise PySide2
+    """Initialise pyside2
 
     These functions serve to test the existence of a binding
     along with set it up in such a way that it aligns with
@@ -1330,10 +1330,10 @@ def _pyside2():
     extras = ["QtUiTools"]
     try:
         try:
-            # Before merge of PySide and shiboken
+            # Before merge of pyside and shiboken
             import shiboken2
         except ImportError:
-            # After merge of PySide and shiboken, May 2017
+            # After merge of pyside and shiboken, May 2017
             from PySide2 import shiboken2
         extras.append("shiboken2")
     except ImportError:
@@ -1357,21 +1357,21 @@ def _pyside2():
         Qt.QtCompat.setSectionResizeMode = \
             Qt._QtWidgets.QHeaderView.setSectionResizeMode
 
-    _reassign_misplaced_members("PySide2")
-    _build_compatibility_members("PySide2")
+    _reassign_misplaced_members("pyside2")
+    _build_compatibility_members("pyside2")
 
 
 def _pyside():
-    """Initialise PySide"""
+    """Initialise pyside"""
 
     import PySide as module
     extras = ["QtUiTools"]
     try:
         try:
-            # Before merge of PySide and shiboken
+            # Before merge of pyside and shiboken
             import shiboken
         except ImportError:
-            # After merge of PySide and shiboken, May 2017
+            # After merge of pyside and shiboken, May 2017
             from PySide import shiboken
         extras.append("shiboken")
     except ImportError:
@@ -1400,8 +1400,8 @@ def _pyside():
     if hasattr(Qt, "_QtCore"):
         Qt.__qt_version__ = Qt._QtCore.qVersion()
 
-    _reassign_misplaced_members("PySide")
-    _build_compatibility_members("PySide")
+    _reassign_misplaced_members("pyside")
+    _build_compatibility_members("pyside")
 
 
 def _pyqt5():
@@ -1554,7 +1554,7 @@ def _log(text):
 
 
 def _convert(lines):
-    """Convert compiled .ui file from PySide2 to Qt.py
+    """Convert compiled .ui file from pyside2 to Qt.py
 
     Arguments:
         lines (list): Each line of of .ui file
@@ -1566,7 +1566,7 @@ def _convert(lines):
     """
 
     def parse(line):
-        line = line.replace("from PySide2 import", "from Qt import QtCompat,")
+        line = line.replace("from pyside2 import", "from Qt import QtCompat,")
         line = line.replace("QtWidgets.QApplication.translate",
                             "QtCompat.translate")
         if "QtCore.SIGNAL" in line:
@@ -1593,7 +1593,7 @@ def _cli(args):
                         help="Path to compiled Python module, e.g. my_ui.py")
     parser.add_argument("--compile",
                         help="Accept raw .ui file and compile with native "
-                             "PySide2 compiler.")
+                             "pyside2 compiler.")
     parser.add_argument("--stdout",
                         help="Write to stdout instead of file",
                         action="store_true")
@@ -1640,7 +1640,7 @@ def _cli(args):
 
 def _install():
     # Default order (customise order and content via QT_PREFERRED_BINDING)
-    default_order = ("PySide2", "PyQt5", "PySide", "PyQt4")
+    default_order = ("pyside2", "PyQt5", "pyside", "PyQt4")
     preferred_order = list(
         b for b in QT_PREFERRED_BINDING.split(os.pathsep) if b
     )
@@ -1648,9 +1648,9 @@ def _install():
     order = preferred_order or default_order
 
     available = {
-        "PySide2": _pyside2,
+        "pyside2": _pyside2,
         "PyQt5": _pyqt5,
-        "PySide": _pyside,
+        "pyside": _pyside,
         "PyQt4": _pyqt4,
         "None": _none
     }
@@ -1716,9 +1716,9 @@ def _install():
 _install()
 
 # Setup Binding Enum states
-Qt.IsPySide2 = Qt.__binding__ == 'PySide2'
+Qt.IsPySide2 = Qt.__binding__ == 'pyside2'
 Qt.IsPyQt5 = Qt.__binding__ == 'PyQt5'
-Qt.IsPySide = Qt.__binding__ == 'PySide'
+Qt.IsPySide = Qt.__binding__ == 'pyside'
 Qt.IsPyQt4 = Qt.__binding__ == 'PyQt4'
 
 """Augment QtCompat
@@ -1760,7 +1760,7 @@ if __name__ == "__main__":
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
-# In PySide(2), loadUi does not exist, so we implement it
+# In pyside(2), loadUi does not exist, so we implement it
 #
 # `_UiLoader` is adapted from the qtpy project, which was further influenced
 # by qt-helpers which was released under a 3-clause BSD license which in turn
