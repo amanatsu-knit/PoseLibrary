@@ -19,9 +19,9 @@ except:
     import shiboken
 
 try:
-    from poselibrary_ui.pyside2 import poselibrary_window
+    from uipackage.pyside2 import poselibrary_window
 except ImportError:
-    from poselibrary_ui.pyside import poselibrary_window
+    from uipackage.pyside import poselibrary_window
 
 class MainWindow(QtWidgets.QMainWindow, poselibrary_window.Ui_MainWindow):
     def __init__(self, parent=None, *args, **kwargs):
