@@ -370,6 +370,9 @@
        </widget>
       </widget>
       <widget class="QGroupBox" name="groupBox_pose">
+       <property name="contextMenuPolicy">
+        <enum>Qt::NoContextMenu</enum>
+       </property>
        <property name="title">
         <string>Pose</string>
        </property>
@@ -569,6 +572,11 @@
     </item>
    </layout>
   </widget>
+  <action name="action_create_Folder">
+   <property name="text">
+    <string>Create Folder</string>
+   </property>
+  </action>
  </widget>
  <resources/>
  <connections/>
