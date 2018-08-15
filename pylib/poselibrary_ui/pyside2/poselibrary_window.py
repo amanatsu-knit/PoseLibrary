@@ -6,10 +6,6 @@
 #      by: pyside2-uic  running on PySide2 2.0.0~alpha0
 #
 # WARNING! All changes made in this file will be lost!
-import os
-import sys
-path = os.path.join(os.path.dirname(__file__), '../../')
-sys.path.append(path)
 from vendor.Qt import QtCompat, QtCore, QtGui, QtWidgets
 
 class Ui_MainWindow(object):

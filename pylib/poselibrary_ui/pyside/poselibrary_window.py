@@ -6,11 +6,8 @@
 #      by: pyside-uic 0.2.15 running on PySide 1.2.4
 #
 # WARNING! All changes made in this file will be lost!
-import os
-import sys
-path = os.path.join(os.path.dirname(__file__), '../../')
-sys.path.append(path)
-from vendors.PySide import QtCore, QtGui
+
+from PySide import QtCore, QtGui
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
