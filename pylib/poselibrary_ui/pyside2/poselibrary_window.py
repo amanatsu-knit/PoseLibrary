@@ -2,12 +2,14 @@
 
 # Form implementation generated from reading ui file 'D:\work\Maya\PoseLibrary\ui\poseLibrary_ui.ui'
 #
-# Created: Tue Aug 14 21:35:44 2018
+# Created: Tue Aug 14 22:02:37 2018
 #      by: pyside2-uic  running on PySide2 2.0.0~alpha0
 #
 # WARNING! All changes made in this file will be lost!
-
-from PySide2 import QtCore, QtGui, QtWidgets
+import os
+import sys
+path = os.path.join(os.path.dirname(__file__), '../../')
+from vendor.Qt import QtCompat, QtCore, QtGui, QtWidgets
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -263,19 +265,19 @@ class Ui_MainWindow(object):
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(QtWidgets.QApplication.translate("MainWindow", "MainWindow", None, -1))
-        self.treeWidget_folderList.headerItem().setText(0, QtWidgets.QApplication.translate("MainWindow", "1", None, -1))
+        MainWindow.setWindowTitle(QtCompat.translate("MainWindow", "MainWindow", None, -1))
+        self.treeWidget_folderList.headerItem().setText(0, QtCompat.translate("MainWindow", "1", None, -1))
         __sortingEnabled = self.treeWidget_folderList.isSortingEnabled()
         self.treeWidget_folderList.setSortingEnabled(False)
-        self.treeWidget_folderList.topLevelItem(0).setText(0, QtWidgets.QApplication.translate("MainWindow", "A", None, -1))
-        self.treeWidget_folderList.topLevelItem(0).child(0).setText(0, QtWidgets.QApplication.translate("MainWindow", "01", None, -1))
-        self.treeWidget_folderList.topLevelItem(1).setText(0, QtWidgets.QApplication.translate("MainWindow", "B", None, -1))
-        self.treeWidget_folderList.topLevelItem(1).child(0).setText(0, QtWidgets.QApplication.translate("MainWindow", "01", None, -1))
-        self.treeWidget_folderList.topLevelItem(1).child(1).setText(0, QtWidgets.QApplication.translate("MainWindow", "02", None, -1))
+        self.treeWidget_folderList.topLevelItem(0).setText(0, QtCompat.translate("MainWindow", "A", None, -1))
+        self.treeWidget_folderList.topLevelItem(0).child(0).setText(0, QtCompat.translate("MainWindow", "01", None, -1))
+        self.treeWidget_folderList.topLevelItem(1).setText(0, QtCompat.translate("MainWindow", "B", None, -1))
+        self.treeWidget_folderList.topLevelItem(1).child(0).setText(0, QtCompat.translate("MainWindow", "01", None, -1))
+        self.treeWidget_folderList.topLevelItem(1).child(1).setText(0, QtCompat.translate("MainWindow", "02", None, -1))
         self.treeWidget_folderList.setSortingEnabled(__sortingEnabled)
-        self.groupBox_pose.setTitle(QtWidgets.QApplication.translate("MainWindow", "Pose", None, -1))
-        self.button_snapShot.setText(QtWidgets.QApplication.translate("MainWindow", "Icon", None, -1))
-        self.label_poseLabel.setText(QtWidgets.QApplication.translate("MainWindow", "Name", None, -1))
-        self.button_blendValue.setText(QtWidgets.QApplication.translate("MainWindow", "0", None, -1))
-        self.button_save.setText(QtWidgets.QApplication.translate("MainWindow", "Save", None, -1))
+        self.groupBox_pose.setTitle(QtCompat.translate("MainWindow", "Pose", None, -1))
+        self.button_snapShot.setText(QtCompat.translate("MainWindow", "Icon", None, -1))
+        self.label_poseLabel.setText(QtCompat.translate("MainWindow", "Name", None, -1))
+        self.button_blendValue.setText(QtCompat.translate("MainWindow", "0", None, -1))
+        self.button_save.setText(QtCompat.translate("MainWindow", "Save", None, -1))
 
