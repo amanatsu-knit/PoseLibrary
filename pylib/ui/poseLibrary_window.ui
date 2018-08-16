@@ -76,8 +76,8 @@
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>341</width>
-          <height>580</height>
+          <width>330</width>
+          <height>563</height>
          </rect>
         </property>
         <layout class="QGridLayout" name="gridLayout_poseList">
@@ -380,16 +380,7 @@
         <property name="spacing">
          <number>10</number>
         </property>
-        <property name="leftMargin">
-         <number>10</number>
-        </property>
-        <property name="topMargin">
-         <number>10</number>
-        </property>
-        <property name="rightMargin">
-         <number>10</number>
-        </property>
-        <property name="bottomMargin">
+        <property name="margin">
          <number>10</number>
         </property>
         <item>
@@ -398,16 +389,7 @@
            <property name="spacing">
             <number>5</number>
            </property>
-           <property name="leftMargin">
-            <number>5</number>
-           </property>
-           <property name="topMargin">
-            <number>5</number>
-           </property>
-           <property name="rightMargin">
-            <number>5</number>
-           </property>
-           <property name="bottomMargin">
+           <property name="margin">
             <number>5</number>
            </property>
            <item>
@@ -464,16 +446,7 @@
            <property name="spacing">
             <number>5</number>
            </property>
-           <property name="leftMargin">
-            <number>5</number>
-           </property>
-           <property name="topMargin">
-            <number>5</number>
-           </property>
-           <property name="rightMargin">
-            <number>5</number>
-           </property>
-           <property name="bottomMargin">
+           <property name="margin">
             <number>5</number>
            </property>
            <item>
@@ -515,16 +488,7 @@
            <property name="spacing">
             <number>5</number>
            </property>
-           <property name="leftMargin">
-            <number>5</number>
-           </property>
-           <property name="topMargin">
-            <number>5</number>
-           </property>
-           <property name="rightMargin">
-            <number>5</number>
-           </property>
-           <property name="bottomMargin">
+           <property name="margin">
             <number>5</number>
            </property>
            <item>
@@ -572,7 +536,7 @@
     </item>
    </layout>
   </widget>
-  <action name="action_create_Folder">
+  <action name="action_create_folder">
    <property name="text">
     <string>Create Folder</string>
    </property>
