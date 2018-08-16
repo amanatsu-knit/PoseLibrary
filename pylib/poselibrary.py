@@ -25,7 +25,7 @@ except ImportError:
     from pylib.ui.pyside import poselibrary_window
 
 
-class PoseLibrary(QtWidgets.QMainWindow, poselibrary_window.Ui_MainWindow):
+class PoseLibrary(QtWidgets.QMainWindow, poselibrary_window.Ui_MainWindow, QtWidgets.QListView):
     def __init__(self, parent=None, *args, **kwargs):
         super(PoseLibrary, self).__init__(parent)
         self.setupUi(self)
@@ -33,39 +33,39 @@ class PoseLibrary(QtWidgets.QMainWindow, poselibrary_window.Ui_MainWindow):
         """Global variables"""
         self.libraryDirectiry = 'D:/work/Maya/PoseLibrary'
 
-    #     """Call functions"""
-    #     self.uiConfigure()
-    #
-    # def uiConfigure(self):
-    #     self.setWindowTitle('Pose Library v0.1')
-    #
-    #     """Folder menu"""
-    #     self.folderMenu = QtGui.QMenu(self)
-    #     self.folderMenu.addAction(self.action_createFolder)
-    #
-    #     """Custom context Menu"""
-    #     self.treeWidget_folderList.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-    #     self.treeWidget_folderList.customContextMenuRequested.connect(self.onFolderContextMenu)
-    #
-    # def onFolderContexMenu(self, point):
-    #     self.folderMenu.exec_(self.treeWidget_folderList.mapToGlobal(point))
+        """Call functions"""
+        self.uiConfigure()
 
+    def uiConfigure(self):
+        self.setWindowTitle('Pose Library v0.1')
 
-class ListView(QtGui.QListView):
-    def __init__(self, *args, **kwargs):
-        super(ListView, self).__init__(*args, **kwargs)
+        """Folder menu"""
+        self.folderMenu = QtWidgets.QMenu(self)
+        self.folderMenu.addAction(self.action_create_folder)
 
+        """Custom context Menu"""
         self.treeWidget_folderList.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-        self.treeWidget_folderList.customContextMenuRequested.connect(self.contextMenu)
+        self.treeWidget_folderList.customContextMenuRequested.connect(self.onFolderContextMenu)
 
-    def contextMenu(self, point):
-        self.folderMenu = QtGui.QMenu(self)
+    def onFolderContexMenu(self, point):
+        self.folderMenu.exec_(self.treeWidget_folderList.mapToGlobal(point))
 
-        for i in range(5):
-            action = QtGui.QAction('Menu%s' % i, self)
-            self.folderMenu.addAction(action)
 
-            self.folderMenu.exec_(self.treeWidget_folderList.mapToGlobal(point))
+# class ListView(QtGui.QListView):
+#     def __init__(self, *args, **kwargs):
+#         super(ListView, self).__init__(*args, **kwargs)
+#
+#         self.treeWidget_folderList.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+#         self.treeWidget_folderList.customContextMenuRequested.connect(self.contextMenu)
+#
+#     def contextMenu(self, point):
+#         self.folderMenu = QtGui.QMenu(self)
+#
+#         for i in range(5):
+#             action = QtGui.QAction('Menu%s' % i, self)
+#             self.folderMenu.addAction(action)
+#
+#             self.folderMenu.exec_(self.treeWidget_folderList.mapToGlobal(point))
 
 def maya_main_window():
     maya_mainwindow_ptr = omui.MQtUtil.mainWindow()

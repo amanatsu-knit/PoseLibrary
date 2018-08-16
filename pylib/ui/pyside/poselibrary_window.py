@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'E:\Git\PoseLibrary\pylib\ui\poseLibrary_ui.ui'
+# Form implementation generated from reading ui file 'E:\Git\PoseLibrary\pylib\ui\poseLibrary_window.ui'
 #
-# Created: Wed Aug 15 10:58:06 2018
-#      by: pyside-uic 0.2.15 running on pyside 1.2.4
+# Created: Thu Aug 16 10:46:25 2018
+#      by: pyside-uic 0.2.15 running on PySide 1.2.4
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -192,6 +192,7 @@ class Ui_MainWindow(object):
         self.gridLayout_poseList.addWidget(self.pushButton_15, 4, 2, 1, 1)
         self.scrollArea_pose.setWidget(self.scrollAreaWidget_pose)
         self.groupBox_pose = QtGui.QGroupBox(self.splitter)
+        self.groupBox_pose.setContextMenuPolicy(QtCore.Qt.NoContextMenu)
         self.groupBox_pose.setObjectName("groupBox_pose")
         self.verticalLayout_pose = QtGui.QVBoxLayout(self.groupBox_pose)
         self.verticalLayout_pose.setSpacing(10)
@@ -258,6 +259,8 @@ class Ui_MainWindow(object):
         self.verticalLayout_pose.addWidget(self.button_save)
         self.horizontalLayout_2.addWidget(self.splitter)
         MainWindow.setCentralWidget(self.centralwidget)
+        self.action_create_folder = QtGui.QAction(MainWindow)
+        self.action_create_folder.setObjectName("action_create_folder")
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
@@ -278,4 +281,5 @@ class Ui_MainWindow(object):
         self.label_poseLabel.setText(QtGui.QApplication.translate("MainWindow", "Name", None, QtGui.QApplication.UnicodeUTF8))
         self.button_blendValue.setText(QtGui.QApplication.translate("MainWindow", "0", None, QtGui.QApplication.UnicodeUTF8))
         self.button_save.setText(QtGui.QApplication.translate("MainWindow", "Save", None, QtGui.QApplication.UnicodeUTF8))
+        self.action_create_folder.setText(QtGui.QApplication.translate("MainWindow", "Create Folder", None, QtGui.QApplication.UnicodeUTF8))
 
