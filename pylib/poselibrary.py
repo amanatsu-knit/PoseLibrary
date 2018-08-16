@@ -20,14 +20,14 @@ except:
     import shiboken
 
 try:
-    from pylib.ui.pyside2 import poselibrary_window
-except ImportError:
     from pylib.ui.pyside import poselibrary_window
+except ImportError:
+    from pylib.ui.pyside2 import poselibrary_window
 
 
-class PoseLibrary(QtWidgets.QMainWindow, poselibrary_window.Ui_MainWindow, QtWidgets.QListView):
+class ASPoseLibrary(QtWidgets.QMainWindow, QtWidgets.QListView, poselibrary_window.Ui_MainWindow):
     def __init__(self, parent=None, *args, **kwargs):
-        super(PoseLibrary, self).__init__(parent)
+        super(ASPoseLibrary, self).__init__(parent)
         self.setupUi(self)
 
         """Global variables"""
@@ -39,19 +39,19 @@ class PoseLibrary(QtWidgets.QMainWindow, poselibrary_window.Ui_MainWindow, QtWid
     def uiConfigure(self):
         self.setWindowTitle('Pose Library v0.1')
 
-        """Folder menu"""
-        self.folderMenu = QtWidgets.QMenu(self)
-        self.folderMenu.addAction(self.action_create_folder)
-
-        """Custom context Menu"""
-        self.treeWidget_folderList.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-        self.treeWidget_folderList.customContextMenuRequested.connect(self.onFolderContextMenu)
+        # """Folder menu"""
+        # self.folderMenu = QtWidgets.QMenu(self)
+        # self.folderMenu.addAction(self.action_create_folder)
+        #
+        # """Custom context Menu"""
+        # self.treeWidget_folderList.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        # self.treeWidget_folderList.customContextMenuRequested.connect(self.onFolderContextMenu)
 
     def onFolderContexMenu(self, point):
         self.folderMenu.exec_(self.treeWidget_folderList.mapToGlobal(point))
 
-
-# class ListView(QtGui.QListView):
+#
+# class ListView(QtWidgets.QListView,poselibrary_window.Ui_MainWindow):
 #     def __init__(self, *args, **kwargs):
 #         super(ListView, self).__init__(*args, **kwargs)
 #
@@ -59,7 +59,7 @@ class PoseLibrary(QtWidgets.QMainWindow, poselibrary_window.Ui_MainWindow, QtWid
 #         self.treeWidget_folderList.customContextMenuRequested.connect(self.contextMenu)
 #
 #     def contextMenu(self, point):
-#         self.folderMenu = QtGui.QMenu(self)
+#         self.folderMenu = QtWidgets.QMenu(self)
 #
 #         for i in range(5):
 #             action = QtGui.QAction('Menu%s' % i, self)
@@ -67,14 +67,14 @@ class PoseLibrary(QtWidgets.QMainWindow, poselibrary_window.Ui_MainWindow, QtWid
 #
 #             self.folderMenu.exec_(self.treeWidget_folderList.mapToGlobal(point))
 
-def maya_main_window():
+def mayaMainWindow():
     maya_mainwindow_ptr = omui.MQtUtil.mainWindow()
 
     return shiboken.wrapInstance(long(maya_mainwindow_ptr), QtWidgets.QMainWindow)
 
 
 def main(*args):
-    dialog = PoseLibrary(maya_main_window())
+    dialog = ASPoseLibrary(mayaMainWindow())
     dialog.show()
 
 
