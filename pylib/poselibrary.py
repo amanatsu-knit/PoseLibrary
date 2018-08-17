@@ -27,7 +27,7 @@ sys.dont_write_bytecode = True
 
 
 class ASPoseLibrary(QtWidgets.QMainWindow, QtWidgets.QListView, poselibrary_window.Ui_MainWindow):
-    def __init__(self, parent=maya_main_window(), *args, **kwargs):
+    def __init__(self, parent=None, *args, **kwargs):
         super(ASPoseLibrary, self).__init__(parent)
         self.setupUi(self)
 
@@ -42,8 +42,8 @@ class ASPoseLibrary(QtWidgets.QMainWindow, QtWidgets.QListView, poselibrary_wind
 
         """Folder menu"""
         self.folderMenu = QtWidgets.QMenu(self)
-        self.folderMenu.addAction()
-        self.action_create_folder.triggered.connect(self.create_folder)
+        self.folderMenu.addAction('Create Folder')
+        self.folderMenu.triggered.connect(self.create_folder)
 
         """Custom context Menu"""
         self.treeWidget_folderList.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
@@ -54,7 +54,7 @@ class ASPoseLibrary(QtWidgets.QMainWindow, QtWidgets.QListView, poselibrary_wind
 
     def create_folder(self):
         folder_name, ok = QtWidgets.QInputDialog.getText(self, 'Folder Name', 'Enter the folder name :',
-                                                         QtWidgets.QlineEdit.Normal)
+                                                         QtWidgets.QLineEdit.Normal)
         if ok:
             os.makedirs('%s/%s' % (self.library_directory, folder_name))
 
@@ -65,7 +65,7 @@ class ASPoseLibrary(QtWidgets.QMainWindow, QtWidgets.QListView, poselibrary_wind
 #         super(ListView, self).__init__(*args, **kwargs)
 #
 #         self.treeWidget_folderList.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-#         self.treeWidget_folderList.customContextMenuRequested.connect(self.contextMenu)
+#         self.treeWidget_folderList.customContextMenuRequested.connect(self.on_folder_context_menu)
 #
 #     def contextMenu(self, point):
 #         self.folderMenu = QtWidgets.QMenu(self)

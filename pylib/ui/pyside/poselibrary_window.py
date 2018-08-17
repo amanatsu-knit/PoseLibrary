@@ -12,7 +12,7 @@ from PySide import QtCore, QtGui
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(853, 600)
+        MainWindow.resize(860, 600)
         self.centralwidget = QtGui.QWidget(MainWindow)
         self.centralwidget.setStyleSheet("font: 14pt \"MS Sans Serif\";")
         self.centralwidget.setObjectName("centralwidget")
