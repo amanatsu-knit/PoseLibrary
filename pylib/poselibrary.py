@@ -7,11 +7,12 @@ Data            : August 11, 2018
 last modified   : August 11, 2018
 Author          : shimono-a
 """
-import os
 import sys
 
+import os
 from maya import OpenMayaUI as omui
-from pylib.vendor.Qt import QtCore, QtGui, QtWidgets
+
+from pylib.vendor.Qt import QtCore, QtWidgets
 
 try:
     from shiboken import wrapInstance
@@ -20,8 +21,12 @@ except ImportError:
 
 try:
     from pylib.ui.pyside2 import poselibrary_window
+
+    reload(poselibrary_window)
 except ImportError:
     from pylib.ui.pyside import poselibrary_window
+
+    reload(poselibrary_window)
 
 sys.dont_write_bytecode = True
 
@@ -32,58 +37,59 @@ class ASPoseLibrary(QtWidgets.QMainWindow, QtWidgets.QListView, poselibrary_wind
         self.setupUi(self)
 
         """Global variables"""
-        self.library_directory = 'D:/work/Maya/PoseLibrary'
+        self.libraryDirectory = 'Users/ATSUSHI/works/06_git/PoseLibrary/Pose'
+        self.folderMenu = QtWidgets.QMenu(self)
 
         """Call functions"""
-        self.ui_configure()
+        self.uiConfigure()
+        self.loadFolderToTreeWidget()
 
-    def ui_configure(self):
+    def uiConfigure(self):
         self.setWindowTitle('Pose Library v0.1')
 
         """Folder menu"""
-        self.folderMenu = QtWidgets.QMenu(self)
         self.folderMenu.addAction('Create Folder')
-        self.folderMenu.triggered.connect(self.create_folder)
+        self.folderMenu.triggered.connect(self.createFolder)
 
         """Custom context Menu"""
         self.treeWidget_folderList.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-        self.treeWidget_folderList.customContextMenuRequested.connect(self.on_folder_context_menu)
+        self.treeWidget_folderList.customContextMenuRequested.connect(self.onFolderContextMenu)
 
-    def on_folder_context_menu(self, point):
+    def onFolderContextMenu(self, point):
         self.folderMenu.exec_(self.treeWidget_folderList.mapToGlobal(point))
 
-    def create_folder(self):
+    """Load Exists Folder structure to QTreeWidget (treeWidget_folderList)"""
+
+    def loadFolderToTreeWidget(self):
+        directory_list = self.getFolderStructre(self.libraryDirectory)
+        for each_directory in directory_list:
+            print each_directory
+
+    def getFolderStructre(self, path):
+        directory_list = {}
+        for root, dirs, files in os.walk(path):
+            folder_list = root.split(os.sep)
+            folders = directory_list
+            for eachFolder in folder_list:
+                folders = folders.setdefault(eachFolder, {})
+
+        return directory_list
+
+    def createFolder(self):
         folder_name, ok = QtWidgets.QInputDialog.getText(self, 'Folder Name', 'Enter the folder name :',
                                                          QtWidgets.QLineEdit.Normal)
         if ok:
-            os.makedirs('%s/%s' % (self.library_directory, folder_name))
+            os.makedirs('%s/%s' % (self.libraryDirectory, folder_name))
 
 
-#
-# class ListView(QtWidgets.QListView,poselibrary_window.Ui_MainWindow):
-#     def __init__(self, *args, **kwargs):
-#         super(ListView, self).__init__(*args, **kwargs)
-#
-#         self.treeWidget_folderList.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-#         self.treeWidget_folderList.customContextMenuRequested.connect(self.on_folder_context_menu)
-#
-#     def contextMenu(self, point):
-#         self.folderMenu = QtWidgets.QMenu(self)
-#
-#         for i in range(5):
-#             action = QtGui.QAction('Menu%s' % i, self)
-#             self.folderMenu.addAction(action)
-#
-#             self.folderMenu.exec_(self.treeWidget_folderList.mapToGlobal(point))
-
-def maya_main_window():
+def mayaMainWindow():
     maya_mainwindow_ptr = omui.MQtUtil.mainWindow()
 
     return wrapInstance(long(maya_mainwindow_ptr), QtWidgets.QMainWindow)
 
 
 def main(*args):
-    dialog = ASPoseLibrary(maya_main_window())
+    dialog = ASPoseLibrary(mayaMainWindow())
     dialog.show()
 
 
