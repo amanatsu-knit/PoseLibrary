@@ -9,6 +9,7 @@
 
 from PySide import QtCore, QtGui
 
+
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
@@ -259,15 +260,21 @@ class Ui_MainWindow(object):
         self.verticalLayout_pose.addWidget(self.button_save)
         self.horizontalLayout_2.addWidget(self.splitter)
         MainWindow.setCentralWidget(self.centralwidget)
-        self.action_create_folder = QtGui.QAction(MainWindow)
-        self.action_create_folder.setObjectName("action_create_folder")
+        self.action_createFolder = QtGui.QAction(MainWindow)
+        self.action_createFolder.setObjectName("action_createFolder")
+        self.action_expand = QtGui.QAction(MainWindow)
+        self.action_expand.setObjectName("action_expand")
+        self.action_collapse = QtGui.QAction(MainWindow)
+        self.action_collapse.setObjectName("action_collapse")
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(QtGui.QApplication.translate("MainWindow", "MainWindow", None, QtGui.QApplication.UnicodeUTF8))
-        self.treeWidget_folderList.headerItem().setText(0, QtGui.QApplication.translate("MainWindow", "1", None, QtGui.QApplication.UnicodeUTF8))
+        MainWindow.setWindowTitle(
+            QtGui.QApplication.translate("MainWindow", "MainWindow", None, QtGui.QApplication.UnicodeUTF8))
+        self.treeWidget_folderList.headerItem().setText(0, QtGui.QApplication.translate("MainWindow", "1", None,
+                                                                                        QtGui.QApplication.UnicodeUTF8))
         __sortingEnabled = self.treeWidget_folderList.isSortingEnabled()
         # self.treeWidget_folderList.setSortingEnabled(False)
         # self.treeWidget_folderList.topLevelItem(0).setText(0, QtGui.QApplication.translate("MainWindow", "A", None, QtGui.QApplication.UnicodeUTF8))
@@ -276,10 +283,19 @@ class Ui_MainWindow(object):
         # self.treeWidget_folderList.topLevelItem(1).child(0).setText(0, QtGui.QApplication.translate("MainWindow", "01", None, QtGui.QApplication.UnicodeUTF8))
         # self.treeWidget_folderList.topLevelItem(1).child(1).setText(0, QtGui.QApplication.translate("MainWindow", "02", None, QtGui.QApplication.UnicodeUTF8))
         self.treeWidget_folderList.setSortingEnabled(__sortingEnabled)
-        self.groupBox_pose.setTitle(QtGui.QApplication.translate("MainWindow", "Pose", None, QtGui.QApplication.UnicodeUTF8))
-        self.button_snapShot.setText(QtGui.QApplication.translate("MainWindow", "Icon", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_poseLabel.setText(QtGui.QApplication.translate("MainWindow", "Name", None, QtGui.QApplication.UnicodeUTF8))
-        self.button_blendValue.setText(QtGui.QApplication.translate("MainWindow", "0", None, QtGui.QApplication.UnicodeUTF8))
-        self.button_save.setText(QtGui.QApplication.translate("MainWindow", "Save", None, QtGui.QApplication.UnicodeUTF8))
-        self.action_create_folder.setText(QtGui.QApplication.translate("MainWindow", "Create Folder", None, QtGui.QApplication.UnicodeUTF8))
-
+        self.groupBox_pose.setTitle(
+            QtGui.QApplication.translate("MainWindow", "Pose", None, QtGui.QApplication.UnicodeUTF8))
+        self.button_snapShot.setText(
+            QtGui.QApplication.translate("MainWindow", "Icon", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_poseLabel.setText(
+            QtGui.QApplication.translate("MainWindow", "Name", None, QtGui.QApplication.UnicodeUTF8))
+        self.button_blendValue.setText(
+            QtGui.QApplication.translate("MainWindow", "0", None, QtGui.QApplication.UnicodeUTF8))
+        self.button_save.setText(
+            QtGui.QApplication.translate("MainWindow", "Save", None, QtGui.QApplication.UnicodeUTF8))
+        self.action_createFolder.setText(
+            QtGui.QApplication.translate("MainWindow", "Create Folder", None, QtGui.QApplication.UnicodeUTF8))
+        self.action_expand.setText(
+            QtGui.QApplication.translate("MainWindow", "Expand", None, QtGui.QApplication.UnicodeUTF8))
+        self.action_collapse.setText(
+            QtGui.QApplication.translate("MainWindow", "Collapse", None, QtGui.QApplication.UnicodeUTF8))

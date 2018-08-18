@@ -9,6 +9,7 @@
 
 from PySide2 import QtCore, QtGui, QtWidgets
 
+
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
@@ -259,15 +260,20 @@ class Ui_MainWindow(object):
         self.verticalLayout_pose.addWidget(self.button_save)
         self.horizontalLayout_2.addWidget(self.splitter)
         MainWindow.setCentralWidget(self.centralwidget)
-        self.action_create_folder = QtWidgets.QAction(MainWindow)
-        self.action_create_folder.setObjectName("action_create_folder")
+        self.action_createFolder = QtWidgets.QAction(MainWindow)
+        self.action_createFolder.setObjectName("action_createFolder")
+        self.action_expand = QtWidgets.QAction(MainWindow)
+        self.action_expand.setObjectName("action_expand")
+        self.action_collapse = QtWidgets.QAction(MainWindow)
+        self.action_collapse.setObjectName("action_collapse")
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QtWidgets.QApplication.translate("MainWindow", "MainWindow", None, -1))
-        self.treeWidget_folderList.headerItem().setText(0, QtWidgets.QApplication.translate("MainWindow", "1", None, -1))
+        self.treeWidget_folderList.headerItem().setText(0,
+                                                        QtWidgets.QApplication.translate("MainWindow", "1", None, -1))
         __sortingEnabled = self.treeWidget_folderList.isSortingEnabled()
         self.treeWidget_folderList.setSortingEnabled(False)
         # self.treeWidget_folderList.topLevelItem(0).setText(0, QtWidgets.QApplication.translate("MainWindow", "A", None, -1))
@@ -281,5 +287,6 @@ class Ui_MainWindow(object):
         self.label_poseLabel.setText(QtWidgets.QApplication.translate("MainWindow", "Name", None, -1))
         self.button_blendValue.setText(QtWidgets.QApplication.translate("MainWindow", "0", None, -1))
         self.button_save.setText(QtWidgets.QApplication.translate("MainWindow", "Save", None, -1))
-        self.action_create_folder.setText(QtWidgets.QApplication.translate("MainWindow", "Create Folder", None, -1))
-
+        self.action_createFolder.setText(QtWidgets.QApplication.translate("MainWindow", "Create Folder", None, -1))
+        self.action_expand.setText(QtWidgets.QApplication.translate("MainWindow", "Expand", None, -1))
+        self.action_collapse.setText(QtWidgets.QApplication.translate("MainWindow", "Collapse", None, -1))
