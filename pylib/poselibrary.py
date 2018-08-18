@@ -12,7 +12,7 @@ import sys
 import os
 from maya import OpenMayaUI as omui
 
-from pylib.vendor.Qt import QtCore, QtWidgets
+from pylib.vendor.Qt import QtCore, QtWidgets, QtGui
 
 try:
     from shiboken import wrapInstance
@@ -37,12 +37,14 @@ class ASPoseLibrary(QtWidgets.QMainWindow, QtWidgets.QListView, poselibrary_wind
         self.setupUi(self)
 
         """Global variables"""
-        self.libraryDirectory = 'Users/ATSUSHI/works/06_git/PoseLibrary/Pose'
+        self.libraryDirectory = 'D:/work/Maya/PoseLibrary/PoseData'
+        self.currentDirectory = os.path.abspath(os.path.dirname('__file__'))
+        print self.currentDirectory
         self.folderMenu = QtWidgets.QMenu(self)
 
         """Call functions"""
         self.uiConfigure()
-        self.loadFolderToTreeWidget()
+        self.loadFolderStructure(self.libraryDirectory)
 
     def uiConfigure(self):
         self.setWindowTitle('Pose Library v0.1')
@@ -60,32 +62,52 @@ class ASPoseLibrary(QtWidgets.QMainWindow, QtWidgets.QListView, poselibrary_wind
 
     """Load Exists Folder structure to QTreeWidget (treeWidget_folderList)"""
 
-    def loadFolderToTreeWidget(self):
-        directory_list = self.getFolderStructre(self.libraryDirectory)
-        for each_directory in directory_list:
-            print each_directory
+    def loadFolderStructure(self, path):
+        directoryList = self.getFolderStructre(path)
+        self.folderPath = path
+
+        self.loadFolderToTreeWidget(directoryList[path], self.treeWidget_folderList, path)
+
+    def loadFolderToTreeWidget(self, directoryList, parent, path):
+        for eachDirectory in directoryList:
+            if eachDirectory:
+                self.folderPath = '%s/%s' % (path, eachDirectory)
+
+                item = QtWidgets.QTreeWidgetItem(parent)
+                item.setText(0, eachDirectory)
+                item.setToolTip(0, self.folderPath)
+
+                """Connect Icon"""
+                icon = QtGui.QIcon()
+                icon.addPixmap(QtGui.QPixmap('%s/icons/folder.png' % self.currentDirectory), QtGui.QIcon.Normal,
+                               QtGui.QIcon.Off)
+                item.setIcon(0, icon)
+
+                #print self.folderPath
+                self.loadFolderToTreeWidget(directoryList[eachDirectory], item, self.folderPath)
+        self.folderPath = path
 
     def getFolderStructre(self, path):
-        directory_list = {}
+        directoryList = {}
         for root, dirs, files in os.walk(path):
             folder_list = root.split(os.sep)
-            folders = directory_list
+            folders = directoryList
             for eachFolder in folder_list:
                 folders = folders.setdefault(eachFolder, {})
 
-        return directory_list
+        return directoryList
 
     def createFolder(self):
-        folder_name, ok = QtWidgets.QInputDialog.getText(self, 'Folder Name', 'Enter the folder name :',
-                                                         QtWidgets.QLineEdit.Normal)
+        folderName, ok = QtWidgets.QInputDialog.getText(self, 'Folder Name', 'Enter the folder name :',
+                                                        QtWidgets.QLineEdit.Normal)
         if ok:
-            os.makedirs('%s/%s' % (self.libraryDirectory, folder_name))
+            os.makedirs('%s/%s' % (self.libraryDirectory, folderName))
 
 
 def mayaMainWindow():
-    maya_mainwindow_ptr = omui.MQtUtil.mainWindow()
+    mayaMainwindowPtr = omui.MQtUtil.mainWindow()
 
-    return wrapInstance(long(maya_mainwindow_ptr), QtWidgets.QMainWindow)
+    return wrapInstance(long(mayaMainwindowPtr), QtWidgets.QMainWindow)
 
 
 def main(*args):
