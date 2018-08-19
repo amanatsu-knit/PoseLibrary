@@ -42,13 +42,11 @@ class ASPoseLibrary(QtWidgets.QMainWindow, QtWidgets.QListView, poselibrary_wind
         self.currentDirectory = os.path.abspath(os.path.dirname(__file__))
         self.tempDirectory = os.path.abspath(os.getenv('TEMP'))
         self.snapshotPath = '%s/MyPose_Snapshot.png' % self.tempDirectory
-        self.folderIcon = QtGui.QImage(':/folder-open.png')
+        self.folderIcon = QtGui.QImage(':/folder-closed.png')
         self.createFolderIcon = QtGui.QImage(':/folder-new.png')
         self.expandIcon = QtGui.QImage(':/expandContainer.png')
         self.collapseIcon = QtGui.QImage(':/collapseContainer.png')
         self.snapshotIcon = QtGui.QImage(':/snapshot.svg')
-        self.templateFileIcon = os.path.abspath('%s/icons/file.svg' % os.getenv('MAYA_LOCATION'))
-        print self.templateFileIcon
 
         """Call functions"""
         self.uiConfigure()
@@ -80,6 +78,9 @@ class ASPoseLibrary(QtWidgets.QMainWindow, QtWidgets.QListView, poselibrary_wind
 
         """Save the current pose"""
         self.button_save.clicked.connect(self.savePose)
+
+        """Load Pose to UI"""
+        self.treeWidget_folderList.itemClicked.connect(self.loadCurrentFolder)
 
     """Connect Icon to Widgets"""
 
@@ -246,86 +247,130 @@ class ASPoseLibrary(QtWidgets.QMainWindow, QtWidgets.QListView, poselibrary_wind
         poseLabel = str(self.lineEdit_poseLabel.text())
         if poseLabel:
             currentItem = self.treeWidget_folderList.selectedItems()
+            print currentItem
             if currentItem:
-
                 """Collect Control attribute and attribute attribute values"""
                 selectionList = mc.ls(sl=True)
-                controlInfoList = {}
-                for eachSelection in selectionList:
-                    attributeList = mc.listAttr(eachSelection, k=True, u=True, sn=True)
-                    attributeInfoList = {}
-                    if attributeList:
-                        for eachAttribute in attributeList:
-                            attrValue = mc.getAttr('%s.%s' % (eachSelection, eachAttribute))
-                            attributeInfoList.setdefault(eachAttribute, attrValue)
 
-                        currentControl = eachSelection
-                        """Check the Reference"""
-                        if mc.referenceQuery(eachSelection, inr=True):
-                            referencePath = mc.referenceQuery(eachSelection, f=True)
-                            nameSpace = mc.file(referencePath, q=True, ns=True)
-                            currentControl = eachSelection.replace('%s:' % nameSpace, '')
+                if selectionList:
+                    controlInfoList = {}
+                    for eachSelection in selectionList:
+                        attributeList = mc.listAttr(eachSelection, k=True, u=True, sn=True)
+                        attributeInfoList = {}
+                        if attributeList:
+                            for eachAttribute in attributeList:
+                                attrValue = mc.getAttr('%s.%s' % (eachSelection, eachAttribute))
+                                attributeInfoList.setdefault(eachAttribute, attrValue)
 
-                        controlInfoList.setdefault(currentControl.encode(), attributeInfoList)
+                            currentControl = eachSelection
+                            """Check the Reference"""
+                            if mc.referenceQuery(eachSelection, inr=True):
+                                referencePath = mc.referenceQuery(eachSelection, f=True)
+                                nameSpace = mc.file(referencePath, q=True, ns=True)
+                                currentControl = eachSelection.replace('%s:' % nameSpace, '')
 
-                # print controlInfoList
+                            controlInfoList.setdefault(currentControl.encode(), attributeInfoList)
 
-                """Data history"""
-                owner = os.getenv('USERNAME')
-                time = datetime.datetime.now().strftime("%A, %B %d, %Y %Y %H:%M %p")
-                mayaVersions = mc.about(q=True, v=True)
-                versions = '0.1'
-                dataList = {'control': controlInfoList, 'history': [owner, time, mayaVersions, versions]}
+                    # print controlInfoList
 
-                """Write Pose Data"""
-                # dataPath = '%s/%s.pose' % (self.libraryDirectory, poseLabel)
-                currentFolderPath = str(currentItem[-1].toolTip(0))
-                dataPath = '%s/%s.pose' % (currentFolderPath, poseLabel)
+                    """Data history"""
+                    owner = os.getenv('USERNAME')
+                    time = datetime.datetime.now().strftime("%A, %B %d, %Y %Y %H:%M %p")
+                    mayaVersions = mc.about(q=True, v=True)
+                    versions = '0.1'
+                    dataList = {'control': controlInfoList, 'history': [owner, time, mayaVersions, versions]}
 
-                if os.path.isfile(dataPath):
-                    try:
-                        os.chmod(dataPath, 0777)
-                        os.remove(dataPath)
-                    except Exception, result:
-                        print result
+                    """Write Pose Data"""
+                    # dataPath = '%s/%s.pose' % (self.libraryDirectory, poseLabel)
+                    currentFolderPath = str(currentItem[-1].toolTip(0))
+                    dataPath = '%s/%s.pose' % (currentFolderPath, poseLabel)
 
-                """Write Data"""
-                poseData = open(dataPath, 'w')
-                jsonData = json.dumps(dataList, indent=4)
-                poseData.write(jsonData)
-                poseData.close()
+                    if os.path.isfile(dataPath):
+                        try:
+                            os.chmod(dataPath, 0777)
+                            os.remove(dataPath)
+                        except Exception, result:
+                            print result
 
-                print 'Done\t', dataPath
+                    """Write Data"""
+                    poseData = open(dataPath, 'w')
+                    jsonData = json.dumps(dataList, indent=4)
+                    poseData.write(jsonData)
+                    poseData.close()
 
-                """Pose Icon"""
-                currentPoseIcon = self.snapshotPath
-                if not os.path.isfile(currentPoseIcon):
-                    currentPoseIcon = self.templateFileIcon
-                currentPosePath = dataPath.replace('.pose', '.png')
+                    print 'Done\t', dataPath
 
-                try:
-                    shutil.move(currentPoseIcon, currentPosePath)
-                except Exception, result:
-                    print result
-                print 'Successfully export My Pose Data.'
+                    """Pose Icon"""
+                    currentPoseIcon = self.snapshotPath
+                    if not os.path.isfile(currentPoseIcon):
+                        currentPoseIcon = '%s/icons/poseTemplate.png' % self.currentDirectory
+                    currentPosePath = dataPath.replace('.pose', '.png')
+                    if currentPoseIcon == '%s/icons/poseTemplate.png' % self.currentDirectory:
+                        try:
+                            shutil.copy2(currentPoseIcon, currentPosePath)
+                        except Exception, result:
+                            print result
+                    else:
+                        try:
+                            shutil.move(currentPoseIcon, currentPosePath)
+                        except Exception, result:
+                            print result
+                    self.lineEdit_poseLabel.clear()
+                    self.loadImagetToButton(self.button_snapShot, currentPosePath, [150, 150])
+                    print 'Successfully export My Pose Data.'
+                else:
+                    QtWidgets.QMessageBox.warning(self, 'Warning',
+                                                  'No controls selected\nPlease select at least one control',
+                                                  QtWidgets.QMessageBox.Ok)
+                    print 'No controls selected\t- Please select at least one control'
             else:
                 QtWidgets.QMessageBox.warning(self, 'Warning', 'No folder selected\nPlease select the folder',
                                               QtWidgets.QMessageBox.Ok)
+                print 'Warning', 'No folder selected\t- Please select the folder'
+        else:
+            QtWidgets.QMessageBox.warning(self, 'Warning', 'No pose selected\nPlease set the name before saving',
+                                          QtWidgets.QMessageBox.Ok)
+            print 'No pose selected\t- Please set the name before saving'
 
-                """Create Pose Icon"""
-                """
-                poseIconPath = dataPath.replace('.pose', '.png')
-                currentFrame = mc.currentTime(q=True)
+    """Load Pose to UI"""
 
-                modelPanelList = mc.getPanel(type='modelPanel')
-                for eachModelPanel in modelPanelList:
-                    mc.modelEditor(eachModelPanel, e=True, alo=False)
-                    mc.modelEditor(eachModelPanel, e=True, pm=True)
+    def loadCurrentFolder(self):
+        currentItems = self.treeWidget_folderList.selectedItems()
+        itemList = []
+        for eachItems in currentItems:
+            itemList.append(eachItems)
+        self.loadPoseToLayout(itemList)
 
-                playBlast = mc.playblast(st=currentFrame, et=currentFrame, fmt='image',
-                                         cc=True, v=False, orn=False, fp=True, p=100, c='png',
-                                         wh=[512, 512], cf=poseIconPath)
-                """
+    def loadPoseToLayout(self, itemList):
+        poseList = []
+
+        for eachItem in itemList:
+            currentPath = str(eachItem.toolTip(0))
+            if os.path.isdir(currentPath):
+                directoryList = os.listdir(currentPath)
+                for eachFile in directoryList:
+                    if os.path.isfile('%s/%s' % (currentPath, eachFile)):
+                        if eachFile.endswith('.pose'):
+                            poseList.append('%s/%s' % (currentPath, eachFile))
+        row = -1
+        column = 0
+        coordinateList = []
+        for index in range(10):
+            if index % 5:
+                column += 1
+                coordinateList.append([row, column])
+            else:
+                row += 1
+                column = 0
+                coordinateList.append([row, column])
+
+        for index in range(len(poseList)):
+            poseLabel = os.path.splitext(os.path.basename(poseList[index]))[0]
+            toolButton = QtWidgets.QToolButton(self.scrollAreaWidget_pose)
+            toolButton.setObjectName('toolButton_%s' % poseLabel)
+            toolButton.setText(poseLabel)
+            print  coordinateList[index][0], '\t', coordinateList[index][1]
+            self.gridLayout_poseList.addWidget(toolButton, coordinateList[index][0], coordinateList[index][1], 1, 1)
 
 
 def mayaMainWindow():
