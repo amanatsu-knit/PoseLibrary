@@ -8,17 +8,18 @@ last modified   : August 11, 2018
 Author          : shimono-a
 """
 import sys
-
 import os
+import datetime
+import json
+import shutil
+import maya.cmds as mc
 from maya import OpenMayaUI as omui
-
 from pylib.vendor.Qt import QtCore, QtWidgets, QtGui
 
 try:
     from shiboken import wrapInstance
 except ImportError:
     from shiboken2 import wrapInstance
-
 try:
     from pylib.ui.pyside2 import poselibrary_window
 
@@ -39,10 +40,15 @@ class ASPoseLibrary(QtWidgets.QMainWindow, QtWidgets.QListView, poselibrary_wind
         """Global variables"""
         self.libraryDirectory = 'D:/work/Maya/PoseLibrary/PoseData'
         self.currentDirectory = os.path.abspath(os.path.dirname(__file__))
-        self.folderIconPath = QtGui.QImage(':/folder-open.png')
-        self.createFolderIconPath = QtGui.QImage(':/folder-new.png')
-        self.expandIconPath = QtGui.QImage(':/expandContainer.png')
-        self.collapseIconPath = QtGui.QImage(':/collapseContainer.png')
+        self.tempDirectory = os.path.abspath(os.getenv('TEMP'))
+        self.snapshotPath = '%s/MyPose_Snapshot.png' % self.tempDirectory
+        self.folderIcon = QtGui.QImage(':/folder-open.png')
+        self.createFolderIcon = QtGui.QImage(':/folder-new.png')
+        self.expandIcon = QtGui.QImage(':/expandContainer.png')
+        self.collapseIcon = QtGui.QImage(':/collapseContainer.png')
+        self.snapshotIcon = QtGui.QImage(':/snapshot.svg')
+        self.templateFileIcon = os.path.abspath('%s/icons/file.svg' % os.getenv('MAYA_LOCATION'))
+        print self.templateFileIcon
 
         """Call functions"""
         self.uiConfigure()
@@ -50,7 +56,8 @@ class ASPoseLibrary(QtWidgets.QMainWindow, QtWidgets.QListView, poselibrary_wind
         self.loadFolderStructure(self.libraryDirectory)
 
     def uiConfigure(self):
-        # self.setWindowTitle('Pose Library v0.1')
+        self.setWindowTitle('Pose Library v0.1')
+        self.splitter.setSizes([200, 500, 200])
 
         """Folder menu"""
         self.folderMenu = QtWidgets.QMenu(self)
@@ -67,25 +74,27 @@ class ASPoseLibrary(QtWidgets.QMainWindow, QtWidgets.QListView, poselibrary_wind
         self.treeWidget_folderList.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.treeWidget_folderList.customContextMenuRequested.connect(self.onFolderContextMenu)
 
+        """Snapshot of current pose"""
+        self.button_snapShot.clicked.connect(self.takeSnapshot)
+        self.loadImagetToButton(self.button_snapShot, self.snapshotIcon, [150, 150])
+
+        """Save the current pose"""
+        self.button_save.clicked.connect(self.savePose)
+
     """Connect Icon to Widgets"""
+
     def iconConfigure(self):
         menuList = self.findChildren(QtWidgets.QAction)
         for index in range(len(menuList)):
             objectName = menuList[index].objectName()
             if objectName:
                 currentIcon = objectName.split('_')[1]
-                self.iconPath = None
-                if currentIcon == 'createFolder':
-                    self.iconPath = self.createFolderIconPath
-                elif currentIcon == 'expand':
-                    self.iconPath = self.expandIconPath
-                elif currentIcon == 'collapse':
-                    self.iconPath = self.collapseIconPath
                 icon = QtGui.QIcon()
-                icon.addPixmap(QtGui.QPixmap(self.iconPath), QtGui.QIcon.Normal,
+                icon.addPixmap(QtGui.QPixmap(eval('self.%sIcon' % currentIcon)), QtGui.QIcon.Normal,
                                QtGui.QIcon.Off)
                 menuList[index].setIcon(icon)
 
+    """ContextMenu - treeWidget_folderList"""
 
     def onFolderContextMenu(self, point):
         self.folderMenu.exec_(self.treeWidget_folderList.mapToGlobal(point))
@@ -98,6 +107,8 @@ class ASPoseLibrary(QtWidgets.QMainWindow, QtWidgets.QListView, poselibrary_wind
 
         self.loadFolderToTreeWidget(directoryList[path], self.treeWidget_folderList, path)
 
+    """Load folder structure to QTreeWidget"""
+
     def loadFolderToTreeWidget(self, directoryList, parent, path):
         for eachDirectory in directoryList:
             if eachDirectory:
@@ -109,13 +120,15 @@ class ASPoseLibrary(QtWidgets.QMainWindow, QtWidgets.QListView, poselibrary_wind
 
                 """Connect Icon"""
                 icon = QtGui.QIcon()
-                icon.addPixmap(QtGui.QPixmap(self.folderIconPath), QtGui.QIcon.Normal,
+                icon.addPixmap(QtGui.QPixmap(self.folderIcon), QtGui.QIcon.Normal,
                                QtGui.QIcon.Off)
                 item.setIcon(0, icon)
 
                 # print self.folderPath
                 self.loadFolderToTreeWidget(directoryList[eachDirectory], item, self.folderPath)
         self.folderPath = path
+
+    """Collect Folder structure"""
 
     def getFolderStructre(self, path):
         directoryList = {}
@@ -126,6 +139,8 @@ class ASPoseLibrary(QtWidgets.QMainWindow, QtWidgets.QListView, poselibrary_wind
                 folders = folders.setdefault(eachFolder, {})
 
         return directoryList
+
+    """Create New Folder"""
 
     def createFolder(self):
         folderName, ok = QtWidgets.QInputDialog.getText(self, 'Folder Name', 'Enter the folder name :',
@@ -143,11 +158,11 @@ class ASPoseLibrary(QtWidgets.QMainWindow, QtWidgets.QListView, poselibrary_wind
 
                 """Connect Icon"""
                 icon = QtGui.QIcon()
-                icon.addPixmap(QtGui.QPixmap(self.folderIconPath), QtGui.QIcon.Normal,
+                icon.addPixmap(QtGui.QPixmap(self.folderIcon), QtGui.QIcon.Normal,
                                QtGui.QIcon.Off)
                 item.setIcon(0, icon)
 
-                if parent != self.treeWidget_folderList:
+                if parent is not self.treeWidget_folderList:
                     self.treeWidget_folderList.setItemExpanded(parent, 1)
                     self.treeWidget_folderList.setItemSelected(parent, 0)
 
@@ -155,15 +170,23 @@ class ASPoseLibrary(QtWidgets.QMainWindow, QtWidgets.QListView, poselibrary_wind
 
                 os.makedirs('%s/%s' % (currentPath, str(folderName)))
 
+    """Expand the QTreeWidget"""
+
     def expandFolder(self):
         if self.treeWidget_folderList.selectedItems():
+            icon = QtGui.QIcon()
+            icon.addPixmap(QtGui.QPixmap(self.folderIcon), QtGui.QIcon.Normal,
+                           QtGui.QIcon.Off)
             currentItem = self.treeWidget_folderList.selectedItems()[-1]
             self.dependentList = [currentItem]
             self.collectChildItems(currentItem)
             for eachDependent in self.dependentList:
                 self.treeWidget_folderList.setItemExpanded(eachDependent, 1)
+                eachDependent.setIcon(0, icon)
         else:
             self.treeWidget_folderList.expandAll()
+
+    """Collapse the QTreeWidget"""
 
     def collapseFolder(self):
         currentItem = self.treeWidget_folderList.invisibleRootItem()
@@ -176,16 +199,140 @@ class ASPoseLibrary(QtWidgets.QMainWindow, QtWidgets.QListView, poselibrary_wind
         for eachDependent in self.dependentList:
             self.treeWidget_folderList.collapseItem(eachDependent)
 
+    """Collect all dependent child from parent QTreeWidget Item"""
+
     def collectChildItems(self, parent):
         for index in range(parent.childCount()):
             currentChild = parent.child(index)
             self.dependentList.append(currentChild)
             self.collectChildItems(currentChild)
 
+    """Take Snapshot of current pose"""
+
+    def takeSnapshot(self):
+        print 'wip'
+
+        if os.path.isfile(self.snapshotPath):
+            try:
+                os.chmod(self.snapshotPath, 0777)
+                os.remove(self.snapshotPath)
+            except Exception, result:
+                print result
+
+        modelPanelList = mc.getPanel(type='modelPanel')
+        for eachModelPanel in modelPanelList:
+            mc.modelEditor(eachModelPanel, e=1, alo=0)
+            mc.modelEditor(eachModelPanel, e=1, pm=1)
+
+        currentFrame = mc.currentTime(q=True)
+        playBlast = mc.playblast(st=currentFrame, et=currentFrame, fmt='image', cc=True, v=False, orn=False, fp=True,
+                                 p=100, c='png', quality=100, wh=[512, 512], cf=self.snapshotPath)
+
+        self.loadImagetToButton(self.button_snapShot, self.snapshotPath, [150, 150])
+
+    """Load Image to button"""
+
+    def loadImagetToButton(self, button, path, size):
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(path), QtGui.QIcon.Normal,
+                       QtGui.QIcon.Off)
+        button.setIcon(icon),
+        button.setIconSize(QtCore.QSize(size[0], size[1]))
+
+    """Save the current Pose"""
+
+    def savePose(self):
+
+        poseLabel = str(self.lineEdit_poseLabel.text())
+        if poseLabel:
+            currentItem = self.treeWidget_folderList.selectedItems()
+            if currentItem:
+
+                """Collect Control attribute and attribute attribute values"""
+                selectionList = mc.ls(sl=True)
+                controlInfoList = {}
+                for eachSelection in selectionList:
+                    attributeList = mc.listAttr(eachSelection, k=True, u=True, sn=True)
+                    attributeInfoList = {}
+                    if attributeList:
+                        for eachAttribute in attributeList:
+                            attrValue = mc.getAttr('%s.%s' % (eachSelection, eachAttribute))
+                            attributeInfoList.setdefault(eachAttribute, attrValue)
+
+                        currentControl = eachSelection
+                        """Check the Reference"""
+                        if mc.referenceQuery(eachSelection, inr=True):
+                            referencePath = mc.referenceQuery(eachSelection, f=True)
+                            nameSpace = mc.file(referencePath, q=True, ns=True)
+                            currentControl = eachSelection.replace('%s:' % nameSpace, '')
+
+                        controlInfoList.setdefault(currentControl.encode(), attributeInfoList)
+
+                # print controlInfoList
+
+                """Data history"""
+                owner = os.getenv('USERNAME')
+                time = datetime.datetime.now().strftime("%A, %B %d, %Y %Y %H:%M %p")
+                mayaVersions = mc.about(q=True, v=True)
+                versions = '0.1'
+                dataList = {'control': controlInfoList, 'history': [owner, time, mayaVersions, versions]}
+
+                """Write Pose Data"""
+                # dataPath = '%s/%s.pose' % (self.libraryDirectory, poseLabel)
+                currentFolderPath = str(currentItem[-1].toolTip(0))
+                dataPath = '%s/%s.pose' % (currentFolderPath, poseLabel)
+
+                if os.path.isfile(dataPath):
+                    try:
+                        os.chmod(dataPath, 0777)
+                        os.remove(dataPath)
+                    except Exception, result:
+                        print result
+
+                """Write Data"""
+                poseData = open(dataPath, 'w')
+                jsonData = json.dumps(dataList, indent=4)
+                poseData.write(jsonData)
+                poseData.close()
+
+                print 'Done\t', dataPath
+
+                """Pose Icon"""
+                currentPoseIcon = self.snapshotPath
+                if not os.path.isfile(currentPoseIcon):
+                    currentPoseIcon = self.templateFileIcon
+                currentPosePath = dataPath.replace('.pose', '.png')
+
+                try:
+                    shutil.move(currentPoseIcon, currentPosePath)
+                except Exception, result:
+                    print result
+                print 'Successfully export My Pose Data.'
+            else:
+                QtWidgets.QMessageBox.warning(self, 'Warning', 'No folder selected\nPlease select the folder',
+                                              QtWidgets.QMessageBox.Ok)
+
+                """Create Pose Icon"""
+                """
+                poseIconPath = dataPath.replace('.pose', '.png')
+                currentFrame = mc.currentTime(q=True)
+
+                modelPanelList = mc.getPanel(type='modelPanel')
+                for eachModelPanel in modelPanelList:
+                    mc.modelEditor(eachModelPanel, e=True, alo=False)
+                    mc.modelEditor(eachModelPanel, e=True, pm=True)
+
+                playBlast = mc.playblast(st=currentFrame, et=currentFrame, fmt='image',
+                                         cc=True, v=False, orn=False, fp=True, p=100, c='png',
+                                         wh=[512, 512], cf=poseIconPath)
+                """
+
+
 def mayaMainWindow():
     mayaMainwindowPtr = omui.MQtUtil.mainWindow()
 
     return wrapInstance(long(mayaMainwindowPtr), QtWidgets.QMainWindow)
+
 
 def main(*args):
     dialog = ASPoseLibrary(mayaMainWindow())
