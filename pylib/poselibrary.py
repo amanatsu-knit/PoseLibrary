@@ -12,6 +12,7 @@ import os
 import datetime
 import json
 import shutil
+from functools import partial
 import maya.cmds as mc
 from maya import OpenMayaUI as omui
 from pylib.vendor.Qt import QtCore, QtWidgets, QtGui
@@ -38,7 +39,7 @@ class ASPoseLibrary(QtWidgets.QMainWindow, QtWidgets.QListView, poselibrary_wind
         self.setupUi(self)
 
         """Global variables"""
-        self.libraryDirectory = 'D:/work/Maya/PoseLibrary/PoseData'
+        self.libraryDirectory = 'E:/Git/PoseLibrary/PoseData'
         self.currentDirectory = os.path.abspath(os.path.dirname(__file__))
         self.tempDirectory = os.path.abspath(os.getenv('TEMP'))
         self.snapshotPath = '%s/MyPose_Snapshot.png' % self.tempDirectory
@@ -47,6 +48,7 @@ class ASPoseLibrary(QtWidgets.QMainWindow, QtWidgets.QListView, poselibrary_wind
         self.expandIcon = QtGui.QImage(':/expandContainer.png')
         self.collapseIcon = QtGui.QImage(':/collapseContainer.png')
         self.snapshotIcon = QtGui.QImage(':/snapshot.svg')
+        self.controlDataList = {}
 
         """Call functions"""
         self.uiConfigure()
@@ -74,13 +76,18 @@ class ASPoseLibrary(QtWidgets.QMainWindow, QtWidgets.QListView, poselibrary_wind
 
         """Snapshot of current pose"""
         self.button_snapShot.clicked.connect(self.takeSnapshot)
-        self.loadImagetToButton(self.button_snapShot, self.snapshotIcon, [150, 150])
 
         """Save the current pose"""
         self.button_save.clicked.connect(self.savePose)
 
         """Load Pose to UI"""
         self.treeWidget_folderList.itemClicked.connect(self.loadCurrentFolder)
+
+        """Pose blending"""
+        self.button_blendValue.clicked.connect(self.sliderReset)
+        self.slider_poseBlend.valueChanged.connect(self.poseSlider)
+
+        self.switchToExportImport('export')
 
     """Connect Icon to Widgets"""
 
@@ -229,11 +236,11 @@ class ASPoseLibrary(QtWidgets.QMainWindow, QtWidgets.QListView, poselibrary_wind
         playBlast = mc.playblast(st=currentFrame, et=currentFrame, fmt='image', cc=True, v=False, orn=False, fp=True,
                                  p=100, c='png', quality=100, wh=[512, 512], cf=self.snapshotPath)
 
-        self.loadImagetToButton(self.button_snapShot, self.snapshotPath, [150, 150])
+        self.loadImageToButton(self.button_snapShot, self.snapshotPath, [150, 150])
 
     """Load Image to button"""
 
-    def loadImagetToButton(self, button, path, size):
+    def loadImageToButton(self, button, path, size):
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(path), QtGui.QIcon.Normal,
                        QtGui.QIcon.Off)
@@ -316,7 +323,8 @@ class ASPoseLibrary(QtWidgets.QMainWindow, QtWidgets.QListView, poselibrary_wind
                         except Exception, result:
                             print result
                     self.lineEdit_poseLabel.clear()
-                    self.loadImagetToButton(self.button_snapShot, currentPosePath, [150, 150])
+                    self.loadImageToButton(self.button_snapShot, currentPosePath, [150, 150])
+                    self.loadCurrentFolder()
                     print 'Successfully export My Pose Data.'
                 else:
                     QtWidgets.QMessageBox.warning(self, 'Warning',
@@ -336,11 +344,24 @@ class ASPoseLibrary(QtWidgets.QMainWindow, QtWidgets.QListView, poselibrary_wind
 
     def loadCurrentFolder(self):
         currentItems = self.treeWidget_folderList.selectedItems()
-        itemList = []
-        for eachItems in currentItems:
-            itemList.append(eachItems)
-        self.loadPoseToLayout(itemList)
 
+        """Add Child items with selected QTree Item"""
+        self.dependentList = []
+
+        for eachItems in currentItems:
+            self.dependentList.append(eachItems)
+            self.collectChildItems(eachItems)
+        self.removeExistWidget(self.gridLayout_poseList)
+        self.loadPoseToLayout(self.dependentList)
+        self.switchToExportImport('export')
+
+    """Remove exists widget from Layout"""
+    def removeExistWidget(self, layout):
+        for index in range(layout.count()):
+            if layout.itemAt(index).widget():
+                layout.itemAt(index).widget().deleteLater()
+
+    """Load pose to layout"""
     def loadPoseToLayout(self, itemList):
         poseList = []
 
@@ -355,8 +376,8 @@ class ASPoseLibrary(QtWidgets.QMainWindow, QtWidgets.QListView, poselibrary_wind
         row = -1
         column = 0
         coordinateList = []
-        for index in range(10):
-            if index % 5:
+        for index in range(len(poseList)):
+            if index % 3:
                 column += 1
                 coordinateList.append([row, column])
             else:
@@ -369,19 +390,103 @@ class ASPoseLibrary(QtWidgets.QMainWindow, QtWidgets.QListView, poselibrary_wind
             toolButton = QtWidgets.QToolButton(self.scrollAreaWidget_pose)
             toolButton.setObjectName('toolButton_%s' % poseLabel)
             toolButton.setText(poseLabel)
-            print  coordinateList[index][0], '\t', coordinateList[index][1]
+            toolButton.setToolButtonStyle(QtCore.Qt.ToolButtonTextUnderIcon)
+            toolButton.setMinimumSize(QtCore.QSize(150, 150))
+            toolButton.setMaximumSize(QtCore.QSize(150, 150))
+            poseIconPath = poseList[index].replace('.pose', '.png')
+            icon = QtGui.QIcon()
+            icon.addPixmap(QtGui.QPixmap(poseIconPath), QtGui.QIcon.Normal,
+                           QtGui.QIcon.Off)
+            toolButton.setIcon(icon),
+            toolButton.setIconSize(QtCore.QSize(125, 125))
             self.gridLayout_poseList.addWidget(toolButton, coordinateList[index][0], coordinateList[index][1], 1, 1)
+
+            toolButton.clicked.connect(partial (self.setCurrentPose, poseList[index]))
+
+    """Set the Pose to character"""
+    def setCurrentPose(self, posePath):
+        readData = open(posePath, 'r')
+        dataList = json.load(readData)
+
+        selectionList = mc.ls(sl=True)
+
+        self.controlDataList = {}
+
+        for eachSelection in selectionList:
+
+            currentControl = eachSelection
+            if mc.referenceQuery(eachSelection, inr=1):
+                referencePath = mc.referenceQuery(eachSelection, f=True)
+                nameSpace = mc.file(referencePath, q=True, ns=True)
+                currentControl = eachSelection.replace('%s:' % nameSpace, '')
+
+            if currentControl in dataList['control']:
+                attributeList = dataList['control'][currentControl]
+
+                for eachAttribute in attributeList:
+                    poseValue = attributeList[eachAttribute]
+                    currentValue = mc.getAttr('%s.%s' % (eachSelection, eachAttribute))
+
+                    self.controlDataList.setdefault('%s.%s' % (eachSelection, eachAttribute), [currentValue, poseValue])
+        currentIconPath = posePath.replace('.pose', '.png')
+        self.loadImageToButton(self.button_snapShot, currentIconPath, [150, 150])
+        currentPoseLabel = os.path.splitext(os.path.basename(posePath))[0]
+        self.lineEdit_poseLabel.setText(currentPoseLabel)
+
+        """Load history"""
+        historyData = dataList['history']
+        historyList = ['Owner%s: %s' % ('\t'.rjust(5),historyData[0]),
+                      'Created%s: %s' % ('\t'.rjust(5),historyData[1]),
+                      'Maya version%s: %s' % ('\t'.rjust(5),historyData[2]),
+                      'Module Versions%s: %s' % ('\t'.rjust(5),historyData[3])
+                      ]
+        self.textEdit_history.setText('\n'.join(historyList))
+        #self.slider_poseBlend.setValue(100)
+        self.switchToExportImport('import')
+        self.poseSlider()
+        print '#Successfully import My Pose'
+
+    def sliderReset(self):
+        self.slider_poseBlend.setValue(100)
+
+    def poseSlider(self):
+        sliderValue = self.slider_poseBlend.value()
+        self.button_blendValue.setText(str(sliderValue))
+        self.poseBlending()
+
+    def poseBlending(self):
+        if self.controlDataList:
+            sliderValue = self.slider_poseBlend.value()
+
+            for eachControl in self.controlDataList:
+                currentValue = self.controlDataList[eachControl][0]
+                poseValue =  self.controlDataList[eachControl][1]
+
+                length = poseValue - currentValue
+                percentage = (length*sliderValue)/100.00
+                setValue = currentValue + percentage
+                mc.setAttr(eachControl, setValue)
+    """Pose Export and import Mode"""
+    def switchToExportImport(self, mode):
+        self.button_save.hide()
+        self.groupBox_blend.hide()
+        if mode=='export':
+            self.button_save.show()
+            self.loadImageToButton(self.button_snapShot, self.snapshotIcon, [150, 150])
+        if mode=='import':
+            self.groupBox_blend.show()
+
+
 
 
 def mayaMainWindow():
-    mayaMainwindowPtr = omui.MQtUtil.mainWindow()
+    mayaMainWindowPtr = omui.MQtUtil.mainWindow()
 
-    return wrapInstance(long(mayaMainwindowPtr), QtWidgets.QMainWindow)
+    return wrapInstance(long(mayaMainWindowPtr), QtWidgets.QMainWindow)
 
 
 def main(*args):
     dialog = ASPoseLibrary(mayaMainWindow())
     dialog.show()
-
 
 main()

@@ -235,6 +235,7 @@ class Ui_MainWindow(object):
         self.verticalLayout_pose.addWidget(self.groupBox_poseLabel)
         self.textEdit_history = QtGui.QTextEdit(self.groupBox_pose)
         self.textEdit_history.setReadOnly(True)
+        self.textEdit_history.setStyleSheet("font: 10pt \"MS Sans Serif\";")
         self.textEdit_history.setObjectName("textEdit_history")
         self.verticalLayout_pose.addWidget(self.textEdit_history)
         spacerItem2 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
@@ -246,13 +247,16 @@ class Ui_MainWindow(object):
         self.horizontalLayout_blend.setContentsMargins(5, 5, 5, 5)
         self.horizontalLayout_blend.setObjectName("horizontalLayout_blend")
         self.slider_poseBlend = QtGui.QSlider(self.groupBox_blend)
+        self.slider_poseBlend.setMaximum(200)
+        self.slider_poseBlend.setProperty("value", 100)
+        self.slider_poseBlend.setSliderPosition(100)
         self.slider_poseBlend.setOrientation(QtCore.Qt.Horizontal)
         self.slider_poseBlend.setObjectName("slider_poseBlend")
         self.horizontalLayout_blend.addWidget(self.slider_poseBlend)
         self.button_blendValue = QtGui.QPushButton(self.groupBox_blend)
         self.button_blendValue.setMinimumSize(QtCore.QSize(50, 20))
         self.button_blendValue.setMaximumSize(QtCore.QSize(50, 20))
-        self.button_blendValue.setStyleSheet("font: 12pt \"MS Sans Serif\";")
+        self.button_blendValue.setStyleSheet("font: 10pt \"MS Sans Serif\";")
         self.button_blendValue.setObjectName("button_blendValue")
         self.horizontalLayout_blend.addWidget(self.button_blendValue)
         self.verticalLayout_pose.addWidget(self.groupBox_blend)
@@ -291,7 +295,7 @@ class Ui_MainWindow(object):
         self.label_poseLabel.setText(
             QtGui.QApplication.translate("MainWindow", "Name", None, QtGui.QApplication.UnicodeUTF8))
         self.button_blendValue.setText(
-            QtGui.QApplication.translate("MainWindow", "0", None, QtGui.QApplication.UnicodeUTF8))
+            QtGui.QApplication.translate("MainWindow", "100", None, QtGui.QApplication.UnicodeUTF8))
         self.button_save.setText(
             QtGui.QApplication.translate("MainWindow", "Save", None, QtGui.QApplication.UnicodeUTF8))
         self.action_createFolder.setText(
