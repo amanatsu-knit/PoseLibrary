@@ -39,8 +39,9 @@ class ASPoseLibrary(QtWidgets.QMainWindow, QtWidgets.QListView, poselibrary_wind
         self.setupUi(self)
 
         """Global variables"""
-        self.libraryDirectory = 'E:/Git/PoseLibrary/PoseData'
+        self.libraryDirectory = 'D:/work/Maya/PoseLibrary/PoseData'
         self.currentDirectory = os.path.abspath(os.path.dirname(__file__))
+        # self.libraryDirectory = os.path.abspath(os.path.join(self.currentDirectory, '..', 'PoseData'))
         self.tempDirectory = os.path.abspath(os.getenv('TEMP'))
         self.snapshotPath = '%s/MyPose_Snapshot.png' % self.tempDirectory
         self.folderIcon = QtGui.QImage(':/folder-closed.png')
@@ -48,7 +49,11 @@ class ASPoseLibrary(QtWidgets.QMainWindow, QtWidgets.QListView, poselibrary_wind
         self.expandIcon = QtGui.QImage(':/expandContainer.png')
         self.collapseIcon = QtGui.QImage(':/collapseContainer.png')
         self.snapshotIcon = QtGui.QImage(':/snapshot.svg')
+        self.renameIcon = QtGui.QImage(':/pencilCursor.png')
+        self.removeIcon = QtGui.QImage(':/deleteActive.png')
         self.controlDataList = {}
+        self.currentMode = 'export'
+        self.currentPoseData = ''
 
         """Call functions"""
         self.uiConfigure()
@@ -58,6 +63,7 @@ class ASPoseLibrary(QtWidgets.QMainWindow, QtWidgets.QListView, poselibrary_wind
     def uiConfigure(self):
         self.setWindowTitle('Pose Library v0.1')
         self.splitter.setSizes([200, 500, 200])
+        self.resize(985, 620)
 
         """Folder menu"""
         self.folderMenu = QtWidgets.QMenu(self)
@@ -65,10 +71,15 @@ class ASPoseLibrary(QtWidgets.QMainWindow, QtWidgets.QListView, poselibrary_wind
         self.folderMenu.addSeparator()
         self.folderMenu.addAction(self.action_expand)
         self.folderMenu.addAction(self.action_collapse)
+        self.folderMenu.addSeparator()
+        self.folderMenu.addAction(self.action_rename)
+        self.folderMenu.addAction(self.action_remove)
 
         self.action_createFolder.triggered.connect(self.createFolder)
         self.action_expand.triggered.connect(self.expandFolder)
         self.action_collapse.triggered.connect(self.collapseFolder)
+        self.action_rename.triggered.connect(self.renameFolder)
+        self.action_remove.triggered.connect(self.removeFolder)
 
         """Custom context Menu"""
         self.treeWidget_folderList.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
@@ -86,6 +97,9 @@ class ASPoseLibrary(QtWidgets.QMainWindow, QtWidgets.QListView, poselibrary_wind
         """Pose blending"""
         self.button_blendValue.clicked.connect(self.sliderReset)
         self.slider_poseBlend.valueChanged.connect(self.poseSlider)
+
+        """Rename Pose"""
+        self.lineEdit_poseLabel.returnPressed.connect(self.renamePose)
 
         self.switchToExportImport('export')
 
@@ -110,6 +124,7 @@ class ASPoseLibrary(QtWidgets.QMainWindow, QtWidgets.QListView, poselibrary_wind
     """Load Exists Folder structure to QTreeWidget (treeWidget_folderList)"""
 
     def loadFolderStructure(self, path):
+        self.treeWidget_folderList.clear()
         directoryList = self.getFolderStructre(path)
         self.folderPath = path
 
@@ -207,6 +222,57 @@ class ASPoseLibrary(QtWidgets.QMainWindow, QtWidgets.QListView, poselibrary_wind
         for eachDependent in self.dependentList:
             self.treeWidget_folderList.collapseItem(eachDependent)
 
+    """Rename Selected folder"""
+
+    def renameFolder(self):
+        selectedItems = self.treeWidget_folderList.selectedItems()
+        if selectedItems:
+            newName, ok = QtWidgets.QInputDialog.getText(self, 'Folder Name', 'Enter the new name :',
+                                                         QtWidgets.QLineEdit.Normal)
+            if ok:
+                currentFolderPath = str(selectedItems[-1].toolTip(0))
+                selectedItems[-1].setText = (0, newName)
+                newFolderPath = '%s/%s' % (os.path.dirname(currentFolderPath), str(newName))
+                replay = 0
+                try:
+                    os.chmod(currentFolderPath, 0777)
+                    os.rename(currentFolderPath, newFolderPath)
+                    replay = 1
+                except Exception, result:
+                    replay = 0
+                    print result
+                if replay == 1:
+                    selectedItems[-1].setText = (0, newName)
+                    selectedItems[-1].setToolTip = (0, newFolderPath)
+                # self.loadFolderStructure(self.libraryDirectory)
+
+        else:
+            QtWidgets.QMessageBox.warning(self, 'Warning', 'No folder selected\nPlease select the folder',
+                                          QtWidgets.QMessageBox.Ok)
+            print 'Warning', 'No folder selected\t- Please select the folder'
+
+    """Remove Selected folder"""
+
+    def removeFolder(self):
+        selectedItems = self.treeWidget_folderList.selectedItems()
+        if selectedItems:
+            replay = QtWidgets.QMessageBox.question(self, 'Question', 'Are you sure, you want to remove folder',
+                                                    QtWidgets.QMessageBox.Yes, QtWidgets.QMessageBox.No)
+            if replay == QtWidgets.QMessageBox.Yes:
+                for eachItems in selectedItems:
+                    folderPath = str(eachItems.ToolTip(0))
+                    try:
+                        os.chmod(folderPath, 0777)
+                        shutil.rmtree(folderPath)
+                        print 'Removed\t', folderPath
+                    except Exception, result:
+                        print result
+                self.loadFolderStructure(self.libraryDirectory)
+            else:
+                QtWidgets.QMessageBox.warning(self, 'Warning', 'No folder selected\nPlease select the folder',
+                                              QtWidgets.QMessageBox.Ok)
+                print 'Warning', 'No folder selected\t- Please select the folder'
+
     """Collect all dependent child from parent QTreeWidget Item"""
 
     def collectChildItems(self, parent):
@@ -218,25 +284,24 @@ class ASPoseLibrary(QtWidgets.QMainWindow, QtWidgets.QListView, poselibrary_wind
     """Take Snapshot of current pose"""
 
     def takeSnapshot(self):
-        print 'wip'
+        if self.currentMode == 'export':
+            if os.path.isfile(self.snapshotPath):
+                try:
+                    os.chmod(self.snapshotPath, 0777)
+                    os.remove(self.snapshotPath)
+                except Exception, result:
+                    print result
 
-        if os.path.isfile(self.snapshotPath):
-            try:
-                os.chmod(self.snapshotPath, 0777)
-                os.remove(self.snapshotPath)
-            except Exception, result:
-                print result
+            modelPanelList = mc.getPanel(type='modelPanel')
+            for eachModelPanel in modelPanelList:
+                mc.modelEditor(eachModelPanel, e=1, alo=0)
+                mc.modelEditor(eachModelPanel, e=1, pm=1)
 
-        modelPanelList = mc.getPanel(type='modelPanel')
-        for eachModelPanel in modelPanelList:
-            mc.modelEditor(eachModelPanel, e=1, alo=0)
-            mc.modelEditor(eachModelPanel, e=1, pm=1)
+            currentFrame = mc.currentTime(q=True)
+            mc.playblast(st=currentFrame, et=currentFrame, fmt='image', cc=True, v=False, orn=False, fp=True,
+                         p=100, c='png', quality=100, wh=[512, 512], cf=self.snapshotPath)
 
-        currentFrame = mc.currentTime(q=True)
-        playBlast = mc.playblast(st=currentFrame, et=currentFrame, fmt='image', cc=True, v=False, orn=False, fp=True,
-                                 p=100, c='png', quality=100, wh=[512, 512], cf=self.snapshotPath)
-
-        self.loadImageToButton(self.button_snapShot, self.snapshotPath, [150, 150])
+            self.loadImageToButton(self.button_snapShot, self.snapshotPath, [150, 150])
 
     """Load Image to button"""
 
@@ -250,7 +315,6 @@ class ASPoseLibrary(QtWidgets.QMainWindow, QtWidgets.QListView, poselibrary_wind
     """Save the current Pose"""
 
     def savePose(self):
-
         poseLabel = str(self.lineEdit_poseLabel.text())
         if poseLabel:
             currentItem = self.treeWidget_folderList.selectedItems()
@@ -322,8 +386,8 @@ class ASPoseLibrary(QtWidgets.QMainWindow, QtWidgets.QListView, poselibrary_wind
                             shutil.move(currentPoseIcon, currentPosePath)
                         except Exception, result:
                             print result
-                    self.lineEdit_poseLabel.clear()
-                    self.loadImageToButton(self.button_snapShot, currentPosePath, [150, 150])
+                    # self.lineEdit_poseLabel.clear()
+                    # elf.loadImageToButton(self.button_snapShot, currentPosePath, [150, 150])
                     self.loadCurrentFolder()
                     print 'Successfully export My Pose Data.'
                 else:
@@ -356,12 +420,14 @@ class ASPoseLibrary(QtWidgets.QMainWindow, QtWidgets.QListView, poselibrary_wind
         self.switchToExportImport('export')
 
     """Remove exists widget from Layout"""
+
     def removeExistWidget(self, layout):
         for index in range(layout.count()):
             if layout.itemAt(index).widget():
                 layout.itemAt(index).widget().deleteLater()
 
     """Load pose to layout"""
+
     def loadPoseToLayout(self, itemList):
         poseList = []
 
@@ -391,19 +457,20 @@ class ASPoseLibrary(QtWidgets.QMainWindow, QtWidgets.QListView, poselibrary_wind
             toolButton.setObjectName('toolButton_%s' % poseLabel)
             toolButton.setText(poseLabel)
             toolButton.setToolButtonStyle(QtCore.Qt.ToolButtonTextUnderIcon)
-            toolButton.setMinimumSize(QtCore.QSize(150, 150))
-            toolButton.setMaximumSize(QtCore.QSize(150, 150))
+            toolButton.setMinimumSize(QtCore.QSize(170, 170))
+            toolButton.setMaximumSize(QtCore.QSize(170, 170))
             poseIconPath = poseList[index].replace('.pose', '.png')
             icon = QtGui.QIcon()
             icon.addPixmap(QtGui.QPixmap(poseIconPath), QtGui.QIcon.Normal,
                            QtGui.QIcon.Off)
             toolButton.setIcon(icon),
-            toolButton.setIconSize(QtCore.QSize(125, 125))
+            toolButton.setIconSize(QtCore.QSize(140, 140))
             self.gridLayout_poseList.addWidget(toolButton, coordinateList[index][0], coordinateList[index][1], 1, 1)
 
-            toolButton.clicked.connect(partial (self.setCurrentPose, poseList[index]))
+            toolButton.clicked.connect(partial(self.setCurrentPose, poseList[index]))
 
     """Set the Pose to character"""
+
     def setCurrentPose(self, posePath):
         readData = open(posePath, 'r')
         dataList = json.load(readData)
@@ -435,15 +502,16 @@ class ASPoseLibrary(QtWidgets.QMainWindow, QtWidgets.QListView, poselibrary_wind
 
         """Load history"""
         historyData = dataList['history']
-        historyList = ['Owner%s: %s' % ('\t'.rjust(5),historyData[0]),
-                      'Created%s: %s' % ('\t'.rjust(5),historyData[1]),
-                      'Maya version%s: %s' % ('\t'.rjust(5),historyData[2]),
-                      'Module Versions%s: %s' % ('\t'.rjust(5),historyData[3])
-                      ]
+        historyList = ['Owner%s: %s' % ('\t'.rjust(5), historyData[0]),
+                       'Created%s: %s' % ('\t'.rjust(5), historyData[1]),
+                       'Maya version%s: %s' % ('\t'.rjust(5), historyData[2]),
+                       'Module Versions%s: %s' % ('\t'.rjust(5), historyData[3])
+                       ]
         self.textEdit_history.setText('\n'.join(historyList))
-        #self.slider_poseBlend.setValue(100)
-        self.switchToExportImport('import')
+        # self.slider_poseBlend.setValue(100)
         self.poseSlider()
+        self.switchToExportImport('import')
+        self.currentPoseData = posePath
         print '#Successfully import My Pose'
 
     def sliderReset(self):
@@ -460,23 +528,52 @@ class ASPoseLibrary(QtWidgets.QMainWindow, QtWidgets.QListView, poselibrary_wind
 
             for eachControl in self.controlDataList:
                 currentValue = self.controlDataList[eachControl][0]
-                poseValue =  self.controlDataList[eachControl][1]
+                poseValue = self.controlDataList[eachControl][1]
 
                 length = poseValue - currentValue
-                percentage = (length*sliderValue)/100.00
+                percentage = (length * sliderValue) / 100.00
                 setValue = currentValue + percentage
                 mc.setAttr(eachControl, setValue)
+
     """Pose Export and import Mode"""
+
     def switchToExportImport(self, mode):
         self.button_save.hide()
         self.groupBox_blend.hide()
-        if mode=='export':
+        if mode == 'export':
+            self.lineEdit_poseLabel.clear()
+            self.textEdit_history.clear()
             self.button_save.show()
             self.loadImageToButton(self.button_snapShot, self.snapshotIcon, [150, 150])
-        if mode=='import':
+            self.currentMode = 'export'
+        if mode == 'import':
             self.groupBox_blend.show()
+            self.currentMode = 'import'
 
+    """Rename Pose"""
 
+    def renamePose(self):
+        if self.currentMode == 'import':
+            if self.currentPoseData:
+                newPoseLabel = str(self.lineEdit_poseLabel.text())
+                if newPoseLabel:
+                    newPosePath = '%s/%s.pose' % (os.path.dirname(self.currentPoseData), newPoseLabel)
+                    existsIconPath = self.crrentPoseData.replace('.pose', '.png')
+                    newIconPath = newPosePath.replace('.pose', '.png')
+
+                    if os.path.isfile(self.currentPoseData):
+                        try:
+                            os.chmod(self.currentPoseData, 0777)
+                            os.rename(self.currentPoseData, newPosePath)
+                        except Exception, result:
+                            print result
+                        if os.path.isfile(existsIconPath):
+                            try:
+                                os.chmod(existsIconPath, 0777)
+                                os.rename(existsIconPath, newIconPath)
+                            except Exception, result:
+                                print result
+                        self.loadCurrentFolder()
 
 
 def mayaMainWindow():
@@ -488,5 +585,6 @@ def mayaMainWindow():
 def main(*args):
     dialog = ASPoseLibrary(mayaMainWindow())
     dialog.show()
+
 
 main()

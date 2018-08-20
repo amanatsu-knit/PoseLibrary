@@ -34,12 +34,15 @@ class Ui_MainWindow(object):
         # item_1 = QtGui.QTreeWidgetItem(item_0)
         # item_1 = QtGui.QTreeWidgetItem(item_0)
         self.scrollArea_pose = QtGui.QScrollArea(self.splitter)
+        self.scrollArea_pose.setStyleSheet("font: 10pt \"MS Sans Serif\";")
         self.scrollArea_pose.setWidgetResizable(True)
         self.scrollArea_pose.setObjectName("scrollArea_pose")
         self.scrollAreaWidget_pose = QtGui.QWidget()
         self.scrollAreaWidget_pose.setGeometry(QtCore.QRect(0, 0, 341, 580))
         self.scrollAreaWidget_pose.setObjectName("scrollAreaWidget_pose")
         self.gridLayout_poseList = QtGui.QGridLayout(self.scrollAreaWidget_pose)
+        self.gridLayout_poseList.setSpacing(2)
+        self.gridLayout_poseList.setContentsMargins(2, 2, 2, 2)
         self.gridLayout_poseList.setObjectName("gridLayout_poseList")
         # self.pushButton_11 = QtGui.QPushButton(self.scrollAreaWidget_pose)
         # sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Fixed, QtGui.QSizePolicy.Fixed)
@@ -247,6 +250,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout_blend.setContentsMargins(5, 5, 5, 5)
         self.horizontalLayout_blend.setObjectName("horizontalLayout_blend")
         self.slider_poseBlend = QtGui.QSlider(self.groupBox_blend)
+        self.slider_poseBlend.setMinimum(-100)
         self.slider_poseBlend.setMaximum(200)
         self.slider_poseBlend.setProperty("value", 100)
         self.slider_poseBlend.setSliderPosition(100)
@@ -271,6 +275,10 @@ class Ui_MainWindow(object):
         self.action_expand.setObjectName("action_expand")
         self.action_collapse = QtGui.QAction(MainWindow)
         self.action_collapse.setObjectName("action_collapse")
+        self.action_remove = QtGui.QAction(MainWindow)
+        self.action_remove.setObjectName("action_remove")
+        self.action_rename = QtGui.QAction(MainWindow)
+        self.action_rename.setObjectName("action_rename")
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
@@ -304,3 +312,7 @@ class Ui_MainWindow(object):
             QtGui.QApplication.translate("MainWindow", "Expand", None, QtGui.QApplication.UnicodeUTF8))
         self.action_collapse.setText(
             QtGui.QApplication.translate("MainWindow", "Collapse", None, QtGui.QApplication.UnicodeUTF8))
+        self.action_remove.setText(
+            QtGui.QApplication.translate("MainWindow", "Remove", None, QtGui.QApplication.UnicodeUTF8))
+        self.action_remove.setText(
+            QtGui.QApplication.translate("MainWindow", "Rename", None, QtGui.QApplication.UnicodeUTF8))
