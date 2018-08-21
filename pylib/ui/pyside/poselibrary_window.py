@@ -314,5 +314,5 @@ class Ui_MainWindow(object):
             QtGui.QApplication.translate("MainWindow", "Collapse", None, QtGui.QApplication.UnicodeUTF8))
         self.action_remove.setText(
             QtGui.QApplication.translate("MainWindow", "Remove", None, QtGui.QApplication.UnicodeUTF8))
-        self.action_remove.setText(
+        self.action_rename.setText(
             QtGui.QApplication.translate("MainWindow", "Rename", None, QtGui.QApplication.UnicodeUTF8))

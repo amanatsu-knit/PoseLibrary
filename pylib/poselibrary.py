@@ -39,7 +39,7 @@ class ASPoseLibrary(QtWidgets.QMainWindow, QtWidgets.QListView, poselibrary_wind
         self.setupUi(self)
 
         """Global variables"""
-        self.libraryDirectory = 'D:/work/Maya/PoseLibrary/PoseData'
+        self.libraryDirectory = 'E:/Git/PoseLibrary/PoseData'
         self.currentDirectory = os.path.abspath(os.path.dirname(__file__))
         # self.libraryDirectory = os.path.abspath(os.path.join(self.currentDirectory, '..', 'PoseData'))
         self.tempDirectory = os.path.abspath(os.getenv('TEMP'))
@@ -231,7 +231,6 @@ class ASPoseLibrary(QtWidgets.QMainWindow, QtWidgets.QListView, poselibrary_wind
                                                          QtWidgets.QLineEdit.Normal)
             if ok:
                 currentFolderPath = str(selectedItems[-1].toolTip(0))
-                selectedItems[-1].setText = (0, newName)
                 newFolderPath = '%s/%s' % (os.path.dirname(currentFolderPath), str(newName))
                 replay = 0
                 try:
@@ -242,8 +241,8 @@ class ASPoseLibrary(QtWidgets.QMainWindow, QtWidgets.QListView, poselibrary_wind
                     replay = 0
                     print result
                 if replay == 1:
-                    selectedItems[-1].setText = (0, newName)
-                    selectedItems[-1].setToolTip = (0, newFolderPath)
+                    selectedItems[-1].setText(0, newName)
+                    selectedItems[-1].setToolTip(0, newFolderPath)
                 # self.loadFolderStructure(self.libraryDirectory)
 
         else:
@@ -260,7 +259,7 @@ class ASPoseLibrary(QtWidgets.QMainWindow, QtWidgets.QListView, poselibrary_wind
                                                     QtWidgets.QMessageBox.Yes, QtWidgets.QMessageBox.No)
             if replay == QtWidgets.QMessageBox.Yes:
                 for eachItems in selectedItems:
-                    folderPath = str(eachItems.ToolTip(0))
+                    folderPath = str(eachItems.toolTip(0))
                     try:
                         os.chmod(folderPath, 0777)
                         shutil.rmtree(folderPath)
@@ -298,9 +297,10 @@ class ASPoseLibrary(QtWidgets.QMainWindow, QtWidgets.QListView, poselibrary_wind
                 mc.modelEditor(eachModelPanel, e=1, pm=1)
 
             currentFrame = mc.currentTime(q=True)
-            mc.playblast(st=currentFrame, et=currentFrame, fmt='image', cc=True, v=False, orn=False, fp=True,
+            playBlast = mc.playblast(st=currentFrame, et=currentFrame, fmt='image', cc=True, v=False, orn=False, fp=True,
                          p=100, c='png', quality=100, wh=[512, 512], cf=self.snapshotPath)
 
+            print playBlast
             self.loadImageToButton(self.button_snapShot, self.snapshotPath, [150, 150])
 
     """Load Image to button"""
@@ -558,7 +558,7 @@ class ASPoseLibrary(QtWidgets.QMainWindow, QtWidgets.QListView, poselibrary_wind
                 newPoseLabel = str(self.lineEdit_poseLabel.text())
                 if newPoseLabel:
                     newPosePath = '%s/%s.pose' % (os.path.dirname(self.currentPoseData), newPoseLabel)
-                    existsIconPath = self.crrentPoseData.replace('.pose', '.png')
+                    existsIconPath = self.currentPoseData.replace('.pose', '.png')
                     newIconPath = newPosePath.replace('.pose', '.png')
 
                     if os.path.isfile(self.currentPoseData):
