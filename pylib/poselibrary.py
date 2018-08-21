@@ -44,8 +44,8 @@ class ASPoseLibrary(QtWidgets.QMainWindow, QtWidgets.QListView, poselibrary_wind
         # self.libraryDirectory = os.path.abspath(os.path.join(self.currentDirectory, '..', 'PoseData'))
         self.tempDirectory = os.path.abspath(os.getenv('TEMP'))
         self.snapshotPath = '%s/MyPose_Snapshot.png' % self.tempDirectory
-        self.folderIcon = QtGui.QImage(':/folder-closed.png')
-        self.createFolderIcon = QtGui.QImage(':/folder-new.png')
+        self.folderIcon = QtGui.QImage(':/\SP_DirClosedIcon.png')
+        self.createFolderIcon = QtGui.QImage(':/SP_FileDialogNewFolder.png')
         self.expandIcon = QtGui.QImage(':/expandContainer.png')
         self.collapseIcon = QtGui.QImage(':/collapseContainer.png')
         self.snapshotIcon = QtGui.QImage(':/snapshot.svg')
